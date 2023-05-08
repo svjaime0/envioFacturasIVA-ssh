@@ -1,0 +1,40 @@
+ 9defVar --name janela01 --type Window
+defVar --name idProcesso --type Numeric
+defVar --name sucesso --type Boolean
+defVar --name janela02 --type Window
+defVar --name macro --type String
+defVar --name caminhoPadrao --type String
+defVar --name banka --type String
+setVar --name "${caminhoPadrao}" --value "C:\\IBM_RPA\\BancoValor" --comment "Definir um diretorio padr√£o para salvar os arquivos"
+goSub --label ObterSenha
+goSub --label CriarMacroAtualizada
+//goSub --label ExecutarMacroLogin
+beginSub --name ExecutarMacroLogin
+launchOrAttach --executablepath "C:\\Program Files (x86)\\IBM\\Client Access\\Emulator\\pcsws.exe" --parameters BANCOVALOR01 --useregex  --regexPattern "Session*" --regexOptions "0" --safesearch  --timeout "00:01:30" janela01=value idProcesso=processId sucesso=success
+attachWindow --window ${janela01}
+delay --timeout "00:00:10"
+keyboard --type "KeyPress" --key "LMenu"
+keyboard --type "KeyDown" --key "A"
+keyboard --type "KeyUp" --key "LMenu"
+delay --timeout "00:00:05"
+keyboard --type "KeyDown" --key "F"
+keyboard --type "KeyDown" --key "Down"
+keyboard --type "KeyDown" --key "Down"
+delay --timeout "00:00:05"
+keyboard --type "KeyDown" --key "Return"
+delay --timeout "00:01:00"
+findWindow --useregex  --regexPattern "Session*" --regexOptions "0" --classname IEFrame --byparent  --window ${janela01} --safesearch  janela02=value idProcesso=processId sucesso=success
+delay --timeout "00:01:00"
+onError --executenext 
+attachWindow --window ${janela02}
+closeWindow --timeout "00:01:30" --window ${janela02} sucesso=value
+endSub
+beginSub --name CriarMacroAtualizada
+setVar --name "${macro}" --value "[PCOMM SCRIPT HEADER]\r\nLANGUAGE=VBSCRIPT\r\nDESCRIPTION=\r\n[PCOMM SCRIPT SOURCE]\r\nOPTION EXPLICIT\r\nautECLSession.SetConnectionByName(ThisSessionName)\r\n\r\nDim facturas_IVA\r\n\r\nDim dataLocal\r\nDim ano\r\nDim mes\r\nDim dia \r\n\r\ndataLocal = Date()\r\n\r\nano = Year(Date())\r\nmes = Month(Date())\r\ndia = Day(Date())\r\n\r\nnum=(senha)\r\n\r\nREM This line calls the macro subroutine\r\nsubSub1_\r\n\r\nsub subSub1_()\r\n   autECLSession.autECLOIA.WaitForAppAvailable\r\n   \r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"rparobotstbanco\"&\"@\"&(num)\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[enter]\"\r\n   \r\n   autECLSession.autECLPS.WaitForAttrib 1,1,\"20\",\"3c\",3,10000\r\n\r\n   autECLSession.autECLPS.Wait 1125 \r\n\r\n   autECLSession.autECLOIA.WaitForAppAvailable\r\n   \r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[enter]\"\r\n   \r\n   autECLSession.autECLPS.WaitForAttrib 22,23,\"00\",\"3c\",3,10000\r\n\r\n   autECLSession.autECLPS.WaitForCursor 22,24,10000\r\n\r\n   autECLSession.autECLOIA.WaitForAppAvailable\r\n   \r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"13\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[enter]\"\r\n   \r\n   autECLSession.autECLPS.WaitForAttrib 8,2,\"00\",\"3c\",3,10000\r\n\r\n   autECLSession.autECLPS.WaitForCursor 8,3,10000\r\n\r\n   autECLSession.autECLOIA.WaitForAppAvailable\r\n   \r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"1\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[enter]\"\r\n   \r\n   autECLSession.autECLPS.WaitForAttrib 5,43,\"00\",\"3c\",3,10000\r\n\r\n   autECLSession.autECLPS.WaitForCursor 5,44,10000\r\n\r\n   autECLSession.autECLOIA.WaitForAppAvailable\r\n   \r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"EM\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[enter]\"\r\n   \r\n   autECLSession.autECLPS.WaitForAttrib 7,31,\"00\",\"3c\",3,10000\r\n\r\n   autECLSession.autECLPS.WaitForCursor 7,32,10000\r\n\r\n   autECLSession.autECLOIA.WaitForAppAvailable\r\n   \r\n\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"facturas_IVA\"&(ano&mes&dia)\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"valordirecto@bancovalor.ao\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[enter]\"\r\n   \r\n   autECLSession.autECLPS.WaitForAttrib 7,31,\"00\",\"3c\",3,10000\r\n\r\n   autECLSession.autECLPS.Wait 14953 \r\n\r\n   autECLSession.autECLOIA.WaitForAppAvailable\r\n   \r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[pf3]\"\r\n   \r\n   autECLSession.autECLPS.WaitForAttrib 22,23,\"00\",\"3c\",3,10000\r\n\r\n   autECLSession.autECLPS.WaitForCursor 22,24,10000\r\n\r\n   autECLSession.autECLOIA.WaitForAppAvailable\r\n   \r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"89\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[enter]\"\r\nend sub\r\n"
+replaceText --texttoparse "${macro}" --textpattern "(senha)" --replacement "${banka}" macro=value
+writeToFile --value "${macro}" --file "${caminhoPadrao}\\Banka\\macro\\@loginExtracaoQuerie_.mac" --encoding "Default" --overwrite  caminhoPadrao=value
+endSub
+beginSub --name ObterSenha
+getEnvVar --name "IBMRPA-BANKA" --target "User" banka=value
+base64ToText --source "${banka}" --encoding "UTF8" sucesso=success banka=value
+endSub*23.0.1.0

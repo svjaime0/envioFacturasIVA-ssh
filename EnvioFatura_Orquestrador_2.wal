@@ -1,0 +1,95 @@
+
+	��TS�ԺJ����^ɻF�;defVar --name calendarioExcel --type Excel
+defVar --name tabela --type DataTable
+defVar --name linha --type Numeric
+defVar --name coluna --type Numeric
+defVar --name dataHora --type DateTime
+defVar --name mes --type Numeric
+defVar --name dia --type Numeric
+defVar --name valorObtido --type String
+defVar --name sucesso --type Boolean
+defVar --name connection --type EmailConnection
+defVar --name paraEmail --type List --innertype String --value "[valordirecto@bancovalor.ao]"
+defVar --name emCC --type List --innertype String --value "[valordirecto@bancovalor.ao]"
+defVar --name tentativas --type Numeric
+onError --label TratarErro
+
+goSub --label ValidacaoDiaUtil
+
+goSub --label ManipularDFVMOV7
+
+goSub --label ManipularProcvFactNCBK
+
+goSub --label ManipularProcvFacturasFG
+beginSub --name TratarErro
+	logMessage --message "LOG ERRO\r\n- Linha: ${rpa:error.LineNumber}\r\n- Comando: ${rpa:error.Command}\r\n- Mensagem: ${rpa:error.Message}\r\n- Rotina: ${rpa:error.Routine}\r\n- Script: ${rpa:error.Script}" --type "Error"
+	exchangeConnect --exchangeversion "Exchange2013" --exchangeurl "https://mail.bancovalor.ao/EWS/Exchange.asmx" --enablesslvalidation  --username "banco.valor" --mailusername "banco.valor@bancovalor.ao" --mailpassword "v+HVl=#D\\,Dg" connection=value
+	emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Falha na Execução" --bodytype "Text" --body "<p>Saudações Caríssimos,,\n\nApresentou falha na execução do robó´:\n</p><p>- Linha: ${rpa:error.LineNumber}</p><p>- Comando: ${rpa:error.Command}</p><p>\n\n\n- Mensagem: ${rpa:error.Message}</p><p>Banco Valor SA,\n\nCordialmente,\n</p>"
+	emailDisconnect --connection ${connection}
+endSub
+beginSub --name ValidacaoDiaUtil
+	excelOpen --file "C:\\Users\\RPAROBOTST\\Desktop\\ENVIO DE FACTURAS IVA\\PRODUCAO_ENVIO_DE_FACTURAS\\Calendário EXXIS.xlsx" calendarioExcel=value
+	excelGetTable --file ${calendarioExcel} --getfirstsheet  --entiretable  --hasheaders  tabela=value linha=rows coluna=columns
+	excelClose --file ${calendarioExcel}
+	getCurrentDateAndTime --localorutc "LocalTime" --getcurrentdateonly  dataHora=value
+	getDatePart --date "${dataHora}" --type "Months" mes=value
+	getDatePart --date "${dataHora}" --type "Days" dia=value
+	getTableCell --dataTable ${tabela} --column ${mes} --row ${dia} valorObtido=value
+	case --switches "Any"
+		when --left "${valorObtido}" --operator "Equal_To" --right F
+		when --left "${valorObtido}" --operator "Equal_To" --right P
+		when --left "${valorObtido}" --operator "Equal_To" --right SÁB
+		when --left "${valorObtido}" --operator "Equal_To" --right DOM
+	then
+		logMessage --message "Robô não é executado na data de hoje." --type "Info"
+		stopExecution
+	otherwise
+		logMessage --message "Dia útil" --type "Info"
+	endCase
+endSub
+beginSub --name ManipularDFVMOV7
+	smtpConnect --smtphost "mail.bancovalor.ao" --smtpport 587 --smtpusessl  connection=value
+	exchangeConnect --exchangeversion "Exchange2013" --exchangeurl "https://mail.bancovalor.ao/EWS/Exchange.asmx" --enablesslvalidation  --username "banco.valor" --mailusername "banco.valor@bancovalor.ao" --mailpassword "v+HVl=#D\\,Dg" connection=value
+	executeScript --handleError  --name EnvioFatura_ManipularDFVMOV7 --comment EnvioFatura_ManipularDFVMOV7 sucesso=value
+	assert --message "Falha na execução do robô ${wdg:subName}" --left "${sucesso}" --operator "Is_True"
+//## NOTIFICAÇÃO ##
+	if --left "${sucesso}" --operator "Is_True"
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "Envio de Facturas IVA | Manipular DFVMOV7 ${sucesso}" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nFoi executada com sucesso o BOT Manipular DFVMOV7.\r\n\r\nAgrademos a vossa atenção,\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+	else
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "Envio de Facturas IVA | NÃO foi executado o Manipular DFVMOV7- ${sucesso}" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nNão foi executada com sucesso o Manipular DFVMOV7.\r\n\r\n\r\nAgrademos a vossa atenção,\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+	endIf
+endSub
+beginSub --name ManipularProcvFactNCBK
+//exchangeConnect --exchangeversion "Exchange2013" --exchangeurl "https://mail.bancovalor.ao/EWS/Exchange.asmx" --enablesslvalidation  --username "banco.valor" --mailusername "banco.valor@bancovalor.ao" --mailpassword "v+HVl=#D\\,Dg" connection=value
+//smtpConnect --smtphost "mail.bancovalor.ao" --smtpport 587 --smtpusessl  connection=value
+//for --variable ${tentativas} --from 1 --to 3 --step 1
+	executeScript --handleError  --name EnvioFatura_ManipularProcvFactNCBK --comment EnvioFatura_ManipularProcvFactNCBK sucesso=value
+	assert --message "Falha na execução do robô ${wdg:subName}" --left "${sucesso}" --operator "Is_True"
+//if --left "${sucesso}" --operator "Is_True"
+//break
+//endIf
+//next
+//## NOTIFICAÇÃO ##
+//if --left "${sucesso}" --operator "Is_True"
+//emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "Envio de Facturas IVA | ManipularProcvFactNCBK ${sucesso}" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nFoi executada com sucesso o BOT ManipularProcvFactNCBK.\r\n\r\nAgrademos a vossa atenção,\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+//else
+//emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "Envio de Facturas IVA | ManipularProcvFactNCBK- ${sucesso}" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nNão foi executada com sucesso o ManipularProcvFactNCBK.\r\n\r\n\r\nAgrademos a vossa atenção,\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+//endIf
+endSub
+beginSub --name ManipularProcvFacturasFG
+	smtpConnect --smtphost "mail.bancovalor.ao" --smtpport 587 --smtpusessl  connection=value
+	exchangeConnect --exchangeversion "Exchange2013" --exchangeurl "https://mail.bancovalor.ao/EWS/Exchange.asmx" --enablesslvalidation  --username "banco.valor" --mailusername "banco.valor@bancovalor.ao" --mailpassword "v+HVl=#D\\,Dg" connection=value
+	for --variable ${tentativas} --from 1 --to 3 --step 1
+		executeScript --handleError  --name EnvioFatura_ManipularProcvFactFG --comment EnvioFatura_ManipularProcvFacturasFG sucesso=value
+		if --left "${sucesso}" --operator "Is_True"
+			break
+		endIf
+	next
+	assert --message "Falha na execução do robô ${wdg:subName}" --left "${sucesso}" --operator "Is_True"
+//## NOTIFICAÇÃO ##
+	if --left "${sucesso}" --operator "Is_True"
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "Envio de Facturas IVA | ManipularProcvFacturasFG ${sucesso}" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nFoi executada com sucesso o BOT ManipularProcvFacturasFG.\r\n\r\nAgrademos a vossa atenção,\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+	else
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "Envio de Facturas IVA | ManipularProcvFacturasFG - ${sucesso}" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nNão foi executada com sucesso o BOT ManipularProcvFacturasFG.\r\n\r\n\r\nAgrademos a vossa atenção,\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+	endIf
+endSub"	Z��i�	BC��=f���R*21.0.3.0

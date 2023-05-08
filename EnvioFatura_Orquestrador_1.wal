@@ -1,0 +1,69 @@
+
+	�G�[�H����q��-defVar --name connection --type EmailConnection
+defVar --name paraEmail --type List --innertype String --value "[valordirecto@bancovalor.ao]"
+defVar --name emCC --type List --innertype String --value "[dcd@bancovalor.ao]"
+defVar --name calendarioExcel --type Excel
+defVar --name tabela --type DataTable
+defVar --name linha --type Numeric
+defVar --name coluna --type Numeric
+defVar --name dataHora --type DateTime
+defVar --name mes --type Numeric
+defVar --name dia --type Numeric
+defVar --name valorObtido --type String
+defVar --name sucesso --type Boolean
+onError --label tratarErro
+//**Validação do Dia Útil**
+goSub --label validacaoDiaUtil
+//**Execução da Extração Query241**
+goSub --label ExportarQueryBanka
+delay --timeout "00:40:00" --comment "Pois time-out do tempo supracitado, chamar o BOT-ConversorXMLparaXLSX"
+//**Conversor XML para XLSX**
+goSub --label ConversorXMLparaXLSX
+beginSub --name tratarErro
+logMessage --message "LOG ERRO\r\n- Linha: ${rpa:error.LineNumber}\r\n- Comando: ${rpa:error.Command}\r\n- Mensagem: ${rpa:error.Message}\r\n- Rotina: ${rpa:error.Routine}\r\n- Script: ${rpa:error.Script}" --type "Error"
+exchangeConnect --exchangeversion "Exchange2013" --exchangeurl "https://mail.bancovalor.ao/EWS/Exchange.asmx" --enablesslvalidation  --username "banco.valor" --mailusername "banco.valor@bancovalor.ao" --mailpassword "v+HVl=#D\\,Dg" connection=value
+emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Falha na Execução" --bodytype "Text" --body "<p>Saudações Caríssimos,,\n\nApresentou falha na execução do robó´:\n</p><p>- Linha: ${rpa:error.LineNumber}</p><p>- Comando: ${rpa:error.Command}</p><p>\n\n\n- Mensagem: ${rpa:error.Message}</p><p>Banco Valor SA,\n\nCordialmente,\n</p>"
+emailDisconnect --connection ${connection}
+endSub
+beginSub --name validacaoDiaUtil
+excelOpen --file "C:\\Users\\RPAROBOTST\\Desktop\\ENVIO DE FACTURAS IVA\\PRODUCAO_ENVIO_DE_FACTURAS\\Calendário EXXIS.xlsx" calendarioExcel=value
+excelGetTable --file ${calendarioExcel} --getfirstsheet  --entiretable  --hasheaders  tabela=value linha=rows coluna=columns
+excelClose --file ${calendarioExcel}
+getCurrentDateAndTime --localorutc "LocalTime" --getcurrentdateonly  dataHora=value
+getDatePart --date "${dataHora}" --type "Months" mes=value
+getDatePart --date "${dataHora}" --type "Days" dia=value
+getTableCell --dataTable ${tabela} --column ${mes} --row ${dia} valorObtido=value
+case --switches "Any"
+	when --left "${valorObtido}" --operator "Equal_To" --right F
+	when --left "${valorObtido}" --operator "Equal_To" --right P
+	when --left "${valorObtido}" --operator "Equal_To" --right SÁB
+	when --left "${valorObtido}" --operator "Equal_To" --right DOM
+then
+	logMessage --message "Robô não é executado na data de hoje." --type "Info"
+	stopExecution
+otherwise
+	logMessage --message "Dia útil" --type "Info"
+endCase
+endSub
+beginSub --name ExportarQueryBanka
+exchangeConnect --exchangeversion "Exchange2013" --exchangeurl "https://mail.bancovalor.ao/EWS/Exchange.asmx" --enablesslvalidation  --username "banco.valor" --mailusername "banco.valor@bancovalor.ao" --mailpassword "v+HVl=#D\\,Dg" connection=value
+smtpConnect --smtphost "mail.bancovalor.ao" --smtpport 587 --smtpusessl  connection=value
+executeScript --name Banka_LoginMacro --comment "Banka_LoginMacro_&_ExtracaoQuery241" sucesso=value
+assert --message "Falha na execução do robô ${wdg:subName}" --left "${sucesso}" --operator "Is_True"
+if --left "${sucesso}" --operator "Is_True"
+	emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "Envio de Facturas IVA | Querie 241 criada com ${sucesso}" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nFoi executada com sucesso a querie 241.\r\n\r\nAgrademos a vossa atenção,\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+else
+	emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "Envio de Facturas IVA | NÃO foi criada a querie 241 - ${sucesso}" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nNão foi executada com sucesso a querie 241.\r\n\r\n\r\nAgrademos a vossa atenção,\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+endIf
+endSub
+beginSub --name ConversorXMLparaXLSX
+smtpConnect --smtphost "mail.bancovalor.ao" --smtpport 587 --smtpusessl  connection=value
+exchangeConnect --exchangeversion "Exchange2013" --exchangeurl "https://mail.bancovalor.ao/EWS/Exchange.asmx" --enablesslvalidation  --username "banco.valor" --mailusername "banco.valor@bancovalor.ao" --mailpassword "v+HVl=#D\\,Dg" connection=value
+executeScript --handleError  --name EnvioFatura_ConversorXMLpXLSX sucesso=value
+assert --message "Falha na execução do robô ${wdg:subName}" --left "${sucesso}" --operator "Is_True"
+if --left "${sucesso}" --operator "Is_True"
+	emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "Envio de Facturas IVA | Conversor XML para XLSX ${sucesso}" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nFoi executada com sucesso ao conversor XML para XLSX.\r\n\r\nAgrademos a vossa atenção,\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+else
+	emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "Envio de Facturas IVA | NÃO foi executada o Conversor XML para XLSX - ${sucesso}" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nNão foi executada com sucesso o conversor XML para XLSX.\r\n\r\n\r\nAgrademos a vossa atenção,\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+endIf
+endSub"	��[LJWE��*����*21.0.3.0

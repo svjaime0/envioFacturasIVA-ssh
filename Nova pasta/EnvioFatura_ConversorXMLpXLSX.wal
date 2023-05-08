@@ -1,0 +1,63 @@
+
+	BG—û∂cG≤—rà·5ã#defVar --name ficheiroXML --type String
+defVar --name ficheiroExcel --type String
+defVar --name excel --type Excel
+defVar --name tabela --type DataTable
+defVar --name diretorio --type String
+defVar --name success --type Boolean
+defVar --name nomeFicheiroExcel --type String
+defVar --name caminhoQuerie241 --type String --value "Y:\\"
+defVar --name diretorioDCCG_IVA --type String --value "Z:\\DCCG - IVA\\RPAROBOT bvalor01"
+defVar --name connection --type EmailConnection
+defVar --name listaDestinatario --type List --innertype String --value "[valordirecto@bancovalor.ao]"
+defVar --name dataValidarDiretorios --type DateTime
+defVar --name ano --type Numeric
+defVar --name mes --type Numeric
+defVar --name dia --type Numeric
+defVar --name nomeFicheiroQuerie241 --type String --value facturas_IVA2023227
+defVar --name directorioRPA --type Boolean
+defVar --name querieExiste --type Boolean
+smtpConnect --smtphost "mail.bancovalor.ao" --smtpport 587 --smtpusessl  connection=value
+exchangeConnect --exchangeversion "Exchange2013" --exchangeurl "https://mail.bancovalor.ao/EWS/Exchange.asmx" --enablesslvalidation  --username "banco.valor" --mailusername "banco.valor@bancovalor.ao" --mailpassword "v+HVl=#D\\,Dg" connection=value
+getCurrentDateAndTime --localorutc "LocalTime" --getcurrentdateonly  dataValidarDiretorios=value
+getDatePart --date "${dataValidarDiretorios}" --type "Years" ano=value
+getDatePart --date "${dataValidarDiretorios}" --type "Months" mes=value
+getDatePart --date "${dataValidarDiretorios}" --type "Days" dia=value
+setVar --name "${nomeFicheiroQuerie241}" --value "facturas_IVA${ano}${mes}${dia}"
+ifFolder --path "Y:\\" directorioRPA=value
+if --left "${directorioRPA}" --operator "Is_True"
+	logMessage --message "Existe/Dispon√≠vel o diretorio das queries" --type "Info"
+	setVar --name "${caminhoQuerie241}" --value "Y:\\${nomeFicheiroQuerie241}.xml"
+else
+	//ENVIAR EMAIL AOS SPONSOR√Ç¬¥S
+	logMessage --message "N√£o est√° Dispon√≠vel o diretorio das queries" --type "Info"
+endIf
+//Verifica se o ficheiro QUERIE existe no Directorio RPA
+ifFile --file "Y:\\${nomeFicheiroQuerie241}.xml" querieExiste=value
+setVar --name "${caminhoQuerie241}" --value "Y:\\${nomeFicheiroQuerie241}.xml"
+//### Copiar o ficheiro 241 no diretorio DCCG_IVA ###
+fileCopy --from "${caminhoQuerie241}" --to "${diretorioDCCG_IVA}"
+//### Termina o momento da c√≥pia ###
+delay --timeout "00:00:40"
+setVar --name "${diretorio}" --value "Z:\\DCCG - IVA\\RPAROBOT bvalor01"
+setVar --name "${ficheiroXML}" --value "${diretorio}\\facturas_IVA${ano}${mes}${dia}.xml"
+setVar --name "${nomeFicheiroExcel}" --value "query241.xlsx"
+
+fileRename --file "${ficheiroXML}" --newname "${nomeFicheiroExcel}.xls" ficheiroExcel=value
+powerShell --apartmentState "MTA" --script "$xlsSpreadsheet = 51\r\n$Excel = New-Object -Com Excel.Application\r\n$WorkBook = $Excel.Workbooks.Open(\"${ficheiroExcel}\")\r\n$WorkBook.SaveAs(\"${diretorio}\\${nomeFicheiroExcel}.xlsx\", $xlsSpreadsheet)\r\n$Excel.Quit()"
+fileDelete --file "${ficheiroExcel}"
+repeat
+	delay --timeout "00:00:05"
+	isFileInUse --file "${diretorio}\\${nomeFicheiroExcel}.xlsx" success=value
+until --left "${success}" --operator "Is_True"
+excelOpen --file "${diretorio}\\${nomeFicheiroExcel}.xlsx" --savechanges  excel=value
+excelSet --value Morada2 --file ${excel} --getfirstsheet  --row 5 --column 13 --comment "Existe duas colunas com o mesmo nome, ent√£o precisei alterar o nome da segunda"
+excelGetTable --file ${excel} --getfirstsheet  --fromrow 5 --fromcolumn 1 --hasheaders  tabela=value
+excelClose --file ${excel}
+if --left "${success}" --operator "Is_True"
+	emailSend --connection ${connection} --to ${listaDestinatario} --from "banco.valor@bancovalor.ao" --cc ${listaDestinatario} --subject "RPA | Convesao do ficheiro XML para XLSX - ${success}" --bodytype "Text" --body "Sauda√ß√µes,\r\n\r\nA accao de c√≥pia da query241 e conversao do mesmo para xml foi procedida com sucesso. : ${success}"
+else
+	emailSend --connection ${connection} --to ${listaDestinatario} --from "banco.valor@bancovalor.ao" --cc ${listaDestinatario} --subject "RPA | Convesao do ficheiro XML para XLSX - ${success}" --bodytype "Text" --body "Sauda√ß√µes,\r\n\r\nA accao de c√≥pia da query241 e conversao do mesmo para xml NAO foi procedida com sucesso. : ${success}"
+endIf
+logMessage --message "A accao de c√≥pia da query241 e conversao do mesmo para xml foi procedida com sucesso.\r\n: ${success}" --type "Info""	
+£`ﬁáWHåßP™ùS**21.0.3.0

@@ -1,0 +1,257 @@
+ñdefVar --name ficheiroExcel --type Excel
+defVar --name tabela01 --type DataTable
+defVar --name linhas --type Numeric
+defVar --name colunas --type Numeric
+defVar --name sucesso --type Boolean
+defVar --name tabela02 --type DataTable
+defVar --name linhas02 --type Numeric
+defVar --name colunas02 --type Numeric
+defVar --name arquivo --type Excel
+defVar --name caracterEspecial --type String --value _
+defVar --name DataMov --type String
+defVar --name TipoMov --type String
+defVar --name nomeObtido --type String
+defVar --name nomeObtido02 --type String
+defVar --name tabela03 --type DataTable
+defVar --name linhas03 --type Numeric
+defVar --name colunas03 --type Numeric
+defVar --name valor1 --type String
+defVar --name valor2 --type String --value GF_
+defVar --name dataObtida --type String
+defVar --name dataConvertidaObtida --type DateTime
+defVar --name anoObtido --type Numeric
+defVar --name arquivo02 --type Excel
+defVar --name tabela04 --type DataTable
+defVar --name linhas04 --type Numeric
+defVar --name colunas04 --type Numeric
+defVar --name valorAnoObtido --type String
+defVar --name dataObtida02 --type DateTime
+defVar --name obterValorColunaREF --type String
+defVar --name obterValorColunaDataMov --type String
+defVar --name obterValorColunaTipoMov --type String
+defVar --name obterValorColunaNdocumento --type String
+defVar --name nomeDocumento --type String
+defVar --name arquivoFinal --type Excel
+defVar --name tabelaFinal --type DataTable
+defVar --name linhasFinal --type Numeric
+defVar --name colunasFinal --type Numeric
+defVar --name dataObtidaFinal --type String
+defVar --name dataConvertidaObtidaFinal --type DateTime
+defVar --name anoFinal --type Numeric
+defVar --name mesFinal --type Numeric
+defVar --name diaFinal --type Numeric
+defVar --name valorAnoObtidoFinal --type Numeric
+defVar --name valorMesObtidoFinal --type Numeric
+defVar --name valorDiaObtidoFinal --type Numeric
+defVar --name obterValorColunaDataConvertida --type String
+defVar --name directorioObtido --type List --innertype String
+defVar --name ficheiroExiste --type Boolean
+defVar --name notificacaoJSenviada --type String
+defVar --name directorioExiste --type Boolean
+defVar --name tabelaNcbk --type DataTable
+defVar --name linhasNcbk --type Numeric
+defVar --name colunasNcbk --type Numeric
+defVar --name valor3 --type String --value GF_
+defVar --name arquivoNCBK --type Excel
+defVar --name dataConvertidaObtidaNCBK --type DateTime
+defVar --name dataObtidaNCBK --type String
+defVar --name anoObtidoNCBK --type Numeric
+defVar --name dataLocal --type DateTime
+defVar --name tabelaValidaData --type DataTable
+defVar --name linhaValidaData --type Numeric
+defVar --name colunaValidaData --type Numeric
+defVar --name dataLocalConvertida --type DateTime
+defVar --name dataMovExtraida --type String
+defVar --name dataMovConvertida --type DateTime
+defVar --name anoMovObtido --type Numeric
+defVar --name mesMovObtido --type Numeric
+defVar --name anoMes_ColunaA_Mov --type Numeric
+defVar --name anoLocalObtido --type Numeric
+defVar --name mesLocalObtido --type Numeric
+defVar --name connection --type EmailConnection
+defVar --name destinataryList --type List --innertype String --value "[vanilson.carvalho@bancovalor.ao]"
+defVar --name linhaFinalExcel --type Numeric
+defVar --name DiferencaEntreDatas --type TimeSpan
+defVar --name tabela --type DataTable
+defVar --name eXcelConversao --type Excel
+smtpConnect --smtphost "mail.bancovalor.ao" --smtpport 587 --authenticationtype "BasicAuthentication" --smtpusessl  connection=value
+exchangeConnect --exchangeversion "Exchange2013" --exchangeurl "https://mail.bancovalor.ao/EWS/Exchange.asmx" --enablesslvalidation  --authenticationtype "BasicAuthentication" --mailusername "banco.valor@bancovalor.ao" --username "banco.valor" --mailpassword "v+HVl=#D\\,Dg" connection=value
+//Verifica se o DirectÃ³rio Existe
+ifFolder --path "I:\\DCCG -IVA" directorioExiste=value
+if --left "${directorioExiste}" --operator "Is_True"
+elseIf --left "${ficheiroExiste}" --operator "Is_True" --negate 
+	//Se nÃ£o existir, despoletar email para DSI em CC DCD e Contabilidade -  NÃO ESTÃ DESENVOLVIDO
+	emailSend --connection ${connection} --to ${destinataryList} --from "banco.valor@bancovalor.ao" --bodytype "Text" --body "SaudaÃ§Ãµes CarÃ­ssimos,\r\n\r\nInformo que possivelmente perdeu-se o mapeamento do pasta DCCG - IVA. Queiram por gentileza validar com maior urgÃªncia possÃ­vel.\r\n\r\nAgradeÃ§o desde jÃ¡.\r\n\r\n\r\nRPA - Envio de Facturas IVA,\r\nCordialmente,"
+	stopExecution
+endIf
+//Verifica se o ficheiro denominado DFVMOV7 estÃ¡ disponÃ­vel
+ifFile --file "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7.csv" ficheiroExiste=value
+if --left "${ficheiroExiste}" --operator "Is_True"
+	readCSV --filepath "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7.csv" --delimiter ";" --hasheaders  --missingfieldaction "ParseError" tabela=value
+	excelOpen --file "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7_Convertido.xlsx" eXcelConversao=value
+	excelSetTable --dataTable ${tabela} --headers  --file ${eXcelConversao} --getfirstsheet  --row 1 --column 1 sucesso=value
+	excelClose --file ${eXcelConversao} --save 
+	//Valide se o Ficheiro DFVMOV7 corresponde Ã  movimentaÃ§Ã£o do IVA do mÃªs anterior.
+	//[Abre ficheiro, valida a 1Âª linha da data do movimento, devendo considerar como vÃ¡lido ->
+	//M -1 (dd-MM-AAA), vÃ¡lido o mÃªs (deverÃ¡ corresponder ao mÃªs anterior) e ano(actual)]
+	excelOpen --file "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7_Convertido.xlsx" --savechanges  ficheiroExcel=value
+	excelGetTable --file ${ficheiroExcel} --getfirstsheet  --entiretable  --hasheaders  tabela01=value linhas=rows colunas=columns
+	excelGet --file ${ficheiroExcel} --getfirstsheet  --row 2 --column 1 dataMovExtraida=value
+	getCurrentDateAndTime --localorutc "LocalTime" --getcurrentdateonly  dataLocal=value
+	textToDateTime --culture "pt-PT" --text "${dataLocal}" dataLocalConvertida=value
+	getDatePart --date "${dataLocalConvertida}" --type "Years" anoLocalObtido=value
+	getDatePart --date "${dataLocalConvertida}" --type "Months" mesLocalObtido=value
+	textToDateTime --culture "pt-PT" --text "${dataMovExtraida}" dataMovConvertida=value
+	getDatePart --date "${dataMovConvertida}" --type "Years" anoMovObtido=value
+	getDatePart --date "${dataMovConvertida}" --type "Months" mesMovObtido=value
+	//Calcular o intevalo entre DATAS
+	//dateDifference --subtractdate ${dataMovConvertida} --fromdate ${dataLocalConvertida} DiferencaEntreDatas=value
+	//Se a diferenÃ§a entre DATAS for 1..., entÃ£o... estÃ¡ em conforme o Ano actual versus do DFVMOV7
+	//if --left "${DiferencaEntreDatas}" --operator "Equal_To" --right "1,"
+	//endIf
+	//Enquanto o Ano local for maior que o Ano Mov - SALVAGUARDANDO A MUDANÃA DE ANO
+	if --left "${anoLocalObtido}" --operator "Greater_Than" --right "${anoMovObtido}"
+		setVar --name "${anoLocalObtido}" --value "${anoMovObtido}"
+		setVar --name "${mesLocalObtido}" --value "${mesMovObtido}"
+	endIf
+	//while --left "${anoLocalObtido}" --operator "Greater_Than" --right "${anoMovObtido}"
+	//decrementVar --number ${anoLocalObtido}
+	//endWhile
+	//Se o Ano Local FOR igual ao Ano Movimento - Continua...
+	if --left "${anoLocalObtido}" --operator "Equal_To" --right "${anoMovObtido}"
+	else
+		emailSend --connection ${connection} --to ${destinataryList} --from "banco.valor@bancovalor.ao" --bodytype "Text" --body "SaudaÃ§Ãµes CarÃ­ssimos,\r\n\r\nInformo que o Ano actual nÃ£o corresponde ao Ano da primeira linha da coluna Data Movimento. EntÃ£o entendemos merecer a vossa atenÃ§Ã£o.\r\n\r\nQueiram por favor verificar o ficheiro partilhado na pasta DCCG - IVA.\r\n\r\n\r\nRPA - Envio de Facturas IVA,\r\n\r\nCordialmente,"
+		//Enviar e-mail aos SponsorÂ´s
+		stopExecution
+	endIf
+	//Valida, enquanto o mes local for Maior que o mesMovObtido decrementa um mÃªs
+	while --left "${mesLocalObtido}" --operator "Greater_Than" --right "${mesMovObtido}"
+		decrementVar --number ${mesLocalObtido}
+	endWhile
+	//ValidaÃ§Ã£o pois ciclo While. Se o MÃªs Local nÃ£o for igual ao MÃªs Movimento, entÃ£o...
+	if --left "${mesLocalObtido}" --operator "Equal_To" --right "${mesMovObtido}" --negate 
+		//Enviar e-mail aos SponsorÂ´s
+		emailSend --connection ${connection} --to ${destinataryList} --from "banco.valor@bancovalor.ao" --bodytype "Text" --body "SaudaÃ§Ãµes CarÃ­ssimos,\r\n\r\nInformo que o MÃªs actual nÃ£o corresponde ao MÃªs da primeira linha da coluna Data Movimento. EntÃ£o entendemos merecer a vossa atenÃ§Ã£o.\r\n\r\nQueiram por favor verificar o ficheiro partilhado na pasta DCCG - IVA.\r\n\r\n\r\nRPA - Envio de Facturas IVA,\r\n\r\nCordialmente,"
+		//EntÃ£o o mÃªs local apÃ³s decremento Ã© superior ao mÃªs Movimento, logo, Ficheiro inconforme.
+		stopExecution
+	endIf
+	//SE O FICHEIRO DFVMOV7 NÃO EXISTIR - ENVIA EMAIL AOS SPONSORÂ´s
+elseIf --left "${ficheiroExiste}" --operator "Is_True" --negate 
+	emailSend --connection ${connection} --to ${destinataryList} --from "banco.valor@bancovalor.ao" --bodytype "Text" --body "SaudaÃ§Ãµes CarÃ­ssimos,\r\n\r\nVerificamos ausÃªncia do ficheiro DFVMOV7, queiram por favor validar com maior urgÃªncia possÃ­vel.\r\n\r\n\r\nRPA - Envio de Facturas IVA,\r\n\r\nCordialmente,"
+	//ApÃ³s envio, para a execuÃ§Ã£o!
+	stopExecution
+endIf
+
+//Inicio da preparaÃ§Ã£o do Ficheiro EXCEL - EXIPRO | FG
+excelGetTable --file ${ficheiroExcel} --getfirstsheet  --entiretable  --hasheaders  tabela01=value linhas=rows colunas=columns
+//AdiÃ§Ã£o de novas colunas ( REF e NOME DOCUMENTO e DATA CONVERTIDA)
+addColumn --dataTable ${tabela01} --columnname REF --type String
+addColumn --dataTable ${tabela01} --columnname "NOME DOCUMENTO" --type String
+addColumn --dataTable ${tabela01} --columnname "DATA CONVERTIDA" --type String
+//INSERÃÃO dos dados na TABELA 01 para refletir as alteraÃ§Ãµes iniciais
+excelSetTable --dataTable ${tabela01} --headers  --file ${ficheiroExcel} --sheet novaFolha --row 1 --column 1 sucesso=value
+//Actualizar nomes das colunas
+excelSet --value DataMov --file ${ficheiroExcel} --sheet novaFolha --row 1 --column 1
+excelSet --value TipoMov --file ${ficheiroExcel} --sheet novaFolha --row 1 --column 2
+excelClose --file ${ficheiroExcel} --save 
+delay --timeout "00:00:55"
+//Abrir o mesmo ficheiro para aplicar Filtro aos Tipos de Movimentos "FG"
+excelOpen --file "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7_Convertido.xlsx" arquivo=value
+excelGetTable --file ${arquivo} --sheet novaFolha --entiretable  --hasheaders  tabela02=value linhas02=rows colunas02=columns
+//Aplicar filtro para FG e salvar na tabela03
+filterTable --where "TipoMov=(\'FG\')" --dataTable ${tabela02} tabela03=value linhas03=rows colunas03=columns
+//Criar Ciclo de REPETIÃÃO para inserÃ§Ã£o do Underscore para Tipo de Movimento FG
+for --variable ${linhas03} --from 1 --to ${tabela03.Rows} --step 1
+	getTableCell --dataTable ${tabela03} --column 2 --row ${linhas03} valor1=value
+	setVar --name "${valor1}" --value "${valor1}${caracterEspecial}"
+	updateRow --index ${linhas03} --valuesmapping "TipoMov=${valor1}" --dataTable ${tabela03}
+next
+delay --timeout "00:00:10"
+//Actualizar as linhas da coluna REF/15 com descritivo GF_
+for --variable ${linhas03} --from 1 --to ${tabela03.Rows} --step 1
+	updateRow --index ${linhas03} --valuesmapping "REF=${valor2}" --dataTable ${tabela03}
+next
+//INSERÃÃO dos dados na TABELA 03 para refletir as novas alteraÃ§Ãµes
+excelSetTable --dataTable ${tabela03} --headers  --file ${arquivo} --sheet novaFolha02 --row 1 --column 1 sucesso=value
+excelClose --file ${arquivo} --save 
+//ABRIR o mesmo ficheiro EXIPRO para aplicar filtro de movimento NCBK
+excelOpen --file "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7_Convertido.xlsx" arquivo02=value
+excelGetTable --file ${arquivo02} --sheet novaFolha --entiretable  --hasheaders  tabela02=value linhas02=rows colunas02=columns
+//Aplicar filtro para NCBK e salvar na tabelaNCBK
+filterTable --where "TipoMov=(\'NCBK\')" --dataTable ${tabela02} tabelaNcbk=value linhasNcbk=rows colunasNcbk=columns
+//Criar Ciclo de REPETIÃÃO para inserÃ§Ã£o do Underscore para Tipo de Movimento NCBK
+for --variable ${linhasNcbk} --from 1 --to ${tabelaNcbk.Rows} --step 1
+	getTableCell --dataTable ${tabelaNcbk} --column 2 --row ${linhasNcbk} valor2=value
+	setVar --name "${valor2}" --value "${valor2}${caracterEspecial}"
+	updateRow --index ${linhasNcbk} --valuesmapping "TipoMov=${valor2}" --dataTable ${tabelaNcbk}
+next
+delay --timeout "00:00:10"
+//Actualizar todas as linhas da TABELA NCBK
+updateRow --index 2 --valuesmapping "${linhasNcbk}=${linhasNcbk}" --dataTable ${tabelaNcbk}
+//Actualizar as linhas da coluna REF/15 com descritivo GF_
+for --variable ${linhasNcbk} --from 1 --to ${tabelaNcbk.Rows} --step 1
+	updateRow --index ${linhasNcbk} --valuesmapping "REF=${valor3}" --dataTable ${tabelaNcbk}
+next
+//INSERÃÃO dos dados na TABELA 03 para refletir as novas alteraÃ§Ãµes
+excelSetTable --dataTable ${tabelaNcbk} --headers  --file ${arquivo02} --sheet novaFolhaNCBK --row 1 --column 1 sucesso=value
+excelClose --file ${arquivo02} --save 
+//VAMOS OBTER APENAS O ANO DA COLUNA 1 E INSERIR NA COLUNA DATA CONVERTIDA
+//Para o efeito, teremos de abrir o Ficheiro novamente da TABELA 03
+excelOpen --file "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7_Convertido.xlsx" arquivoFinal=value
+excelGetTable --file ${arquivoFinal} --sheet novaFolha02 --entiretable  tabelaFinal=value linhasFinal=rows colunasFinal=columns
+//Converter e obter apenas o ano da data exposta no Ficheiro
+for --variable ${linhasFinal} --from 2 --to ${tabelaFinal.Rows} --step 1
+	getTableCell --dataTable ${tabelaFinal} --column 1 --row ${linhasFinal} dataObtida=value
+	textToDateTime --culture "pt-PT" --text "${dataObtida}" dataConvertidaObtida=value
+	getDatePart --date "${dataConvertidaObtida}" --type "Years" anoObtido=value
+	excelSet --value "${anoObtido}" --file ${arquivoFinal} --sheet novaFolha02 --row ${linhasFinal} --column 17
+next
+delay --timeout "00:00:10"
+excelClose --file ${arquivoFinal} --save 
+delay --timeout "00:00:10"
+excelOpen --file "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7_Convertido.xlsx" arquivoFinal=value
+excelGetTable --file ${arquivoFinal} --sheet novaFolha02 --entiretable  --hasheaders  tabelaFinal=value linhasFinal=rows colunasFinal=columns
+//Alimentar a coluna NOME DOCUMENTO com concatenaÃ§Ã£o
+for --variable ${linhasFinal} --from 1 --to ${tabelaFinal.Rows} --step 1
+	getTableCell --dataTable ${tabelaFinal} --column 15 --row ${linhasFinal} obterValorColunaREF=value
+	getTableCell --dataTable ${tabelaFinal} --column 17 --row ${linhasFinal} obterValorColunaDataConvertida=value
+	getTableCell --dataTable ${tabelaFinal} --column 2 --row ${linhasFinal} obterValorColunaTipoMov=value
+	getTableCell --dataTable ${tabelaFinal} --column 3 --row ${linhasFinal} obterValorColunaNdocumento=value
+	setVar --name "${nomeDocumento}" --value "${obterValorColunaREF}${obterValorColunaDataConvertida}${obterValorColunaTipoMov}${obterValorColunaNdocumento}"
+	updateRow --index ${linhasFinal} --valuesmapping "NOME DOCUMENTO=${nomeDocumento}" --dataTable ${tabelaFinal}
+next
+delay --timeout "00:00:10"
+//INSERINDO/GRAVANDO os dados da TABELA FINAL NO FICHEIRO
+excelSetTable --dataTable ${tabelaFinal} --headers  --file ${arquivoFinal} --sheet folhaFinal --row 1 --column 1 sucesso=value
+excelClose --file ${arquivoFinal} --save 
+delay --timeout "00:00:10"
+//ABRIR tabelaNCBK para o devido tratamento
+excelOpen --file "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7_Convertido.xlsx" arquivoNCBK=value
+//OBTER A TABELA DA FOLHA novaFolhaNCBK
+excelGetTable --file ${arquivoNCBK} --sheet novaFolhaNCBK --entiretable  tabelaNcbk=value linhasNcbk=rows colunasNcbk=columns
+for --variable ${linhasNcbk} --from 2 --to ${tabelaNcbk.Rows} --step 1
+	getTableCell --dataTable ${tabelaNcbk} --column 1 --row ${linhasNcbk} dataObtidaNCBK=value
+	textToDateTime --culture "pt-PT" --text "${dataObtidaNCBK}" dataConvertidaObtidaNCBK=value
+	getDatePart --date "${dataConvertidaObtidaNCBK}" --type "Years" anoObtidoNCBK=value
+	//	excelSet --value "${anoObtidoNCBK}" --file ${arquivoNCBK} --sheet novaFolhaNCBK --row ${linhasNcbk} --column 16
+	//	setVar --name "${linhasNcbk}" --value "+${linhasNcbk}"
+	excelSet --value "${anoObtidoNCBK}" --file ${arquivoNCBK} --sheet novaFolhaNCBK --row ${linhasNcbk} --column 17
+next
+excelClose --file ${arquivoNCBK} --save 
+delay --timeout "00:00:10"
+//ABRIR tabelaNCBK para o devido tratamento
+excelOpen --file "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7_Convertido.xlsx" arquivoNCBK=value
+//OBTER A TABELA DA FOLHA novaFolhaNCBK
+excelGetTable --file ${arquivoNCBK} --sheet novaFolhaNCBK --entiretable  --hasheaders  tabelaNcbk=value linhasNcbk=rows colunasNcbk=columns
+delay --timeout "00:00:10"
+for --variable ${linhasNcbk} --from 1 --to ${tabelaNcbk.Rows} --step 1
+	getTableCell --dataTable ${tabelaNcbk} --column 15 --row ${linhasNcbk} obterValorColunaREF=value
+	getTableCell --dataTable ${tabelaNcbk} --column 17 --row ${linhasNcbk} obterValorColunaDataConvertida=value
+	getTableCell --dataTable ${tabelaNcbk} --column 2 --row ${linhasNcbk} obterValorColunaTipoMov=value
+	getTableCell --dataTable ${tabelaNcbk} --column 3 --row ${linhasNcbk} obterValorColunaNdocumento=value
+	setVar --name "${nomeDocumento}" --value "${obterValorColunaREF}${obterValorColunaDataConvertida}${obterValorColunaTipoMov}${obterValorColunaNdocumento}"
+	updateRow --index ${linhasNcbk} --valuesmapping "NOME DOCUMENTO=${nomeDocumento}" --dataTable ${tabelaNcbk}
+next
+delay --timeout "00:00:15"
+excelSetTable --dataTable ${tabelaNcbk} --headers  --file ${arquivoNCBK} --sheet novaFolhaNCBK --row 1 --column 1 sucesso=value
+excelClose --file ${arquivoNCBK} --save *23.0.1.0

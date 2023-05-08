@@ -1,0 +1,81 @@
+
+	À,VoÓ÷L§√f0UöÅ0defVar --name ficheiroXML --type String
+defVar --name ficheiroExcel --type String
+defVar --name excel --type Excel
+defVar --name tabela --type DataTable
+defVar --name diretorio --type String
+defVar --name success --type Boolean
+defVar --name nomeFicheiroExcel --type String
+defVar --name caminhoQuerie241 --type String --value "Y:\\"
+defVar --name diretorioDCCG_IVA --type String --value "Z:\\DCCG - IVA\\RPAROBOT bvalor01"
+defVar --name connection --type EmailConnection
+defVar --name paraEmail --type List --innertype String --value "[valordirecto@bancovalor.ao]"
+defVar --name dataValidarDiretorios --type DateTime
+defVar --name ano --type Numeric
+defVar --name mes --type Numeric
+defVar --name dia --type Numeric
+defVar --name nomeFicheiroQuerie241 --type String
+defVar --name directorioRPA --type Boolean
+defVar --name querieExiste --type Boolean
+defVar --name errors --type List --innertype String
+defVar --name warn --type List --innertype String
+defVar --name validarTentativas --type Numeric
+defVar --name emCC --type List --innertype String --value "[valordirecto@bancovalor.ao,vanilson.carvalho@bancovalor.ao]"
+smtpConnect --smtphost "mail.bancovalor.ao" --smtpport 587 --smtpusessl  connection=value
+exchangeConnect --exchangeversion "Exchange2013" --exchangeurl "https://mail.bancovalor.ao/EWS/Exchange.asmx" --enablesslvalidation  --username "banco.valor" --mailusername "banco.valor@bancovalor.ao" --mailpassword "v+HVl=#D\\,Dg" connection=value
+getCurrentDateAndTime --localorutc "LocalTime" --getcurrentdateonly  dataValidarDiretorios=value
+getDatePart --date "${dataValidarDiretorios}" --type "Years" ano=value
+getDatePart --date "${dataValidarDiretorios}" --type "Months" mes=value
+getDatePart --date "${dataValidarDiretorios}" --type "Days" dia=value
+setVar --name "${nomeFicheiroQuerie241}" --value "facturas_IVA${ano}${mes}${dia}"
+ifFolder --path "Y:\\" directorioRPA=value
+if --left "${directorioRPA}" --operator "Is_True"
+	logMessage --message "Existe/Dispon√≠¬≠vel o diretorio das queries" --type "Info"
+	setVar --name "${caminhoQuerie241}" --value "Y:\\${nomeFicheiroQuerie241}.xml"
+else
+	//ENVIAR EMAIL AOS SPONSOR¬¥S
+	logMessage --message "N√£o est√°¬° Dispon√≠¬≠vel o diretorio das queries" --type "Info"
+endIf
+//Verifica se o ficheiro QUERIE existe no Directorio RPA
+for --variable ${validarTentativas} --from 1 --to 10 --step 1
+	ifFile --file "Y:\\${nomeFicheiroQuerie241}.xml" querieExiste=value
+	if --left "${querieExiste}" --operator "Is_True"
+		break
+	else
+		delay --timeout "00:10:00"
+	endIf
+next
+if --left "${querieExiste}" --operator "Is_True" --negate 
+	emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Query241 n√£o encontrada" --bodytype "Text" --body "Sauda√ß√µes,\r\n\r\nA query241 n√£o foi encontrada no diretorio das queries.\r\n\r\nCordialmente,"
+	failTest --message "Falha ao encontrar Query241"
+endIf
+setVar --name "${caminhoQuerie241}" --value "Y:\\${nomeFicheiroQuerie241}.xml"
+//### Copiar o ficheiro 241 no diretorio DCCG_IVA ###
+fileCopy --from "${caminhoQuerie241}" --to "${diretorioDCCG_IVA}"
+//### Termina o momento da c√≥pia ###
+delay --timeout "00:00:40"
+setVar --name "${diretorio}" --value "Z:\\DCCG - IVA\\RPAROBOT bvalor01"
+setVar --name "${ficheiroXML}" --value "${diretorio}\\facturas_IVA${ano}${mes}${dia}.xml"
+setVar --name "${nomeFicheiroExcel}" --value "query241.xlsx"
+
+fileRename --file "${ficheiroXML}" --newname "${nomeFicheiroExcel}.xls" ficheiroExcel=value
+
+powerShell --apartmentState "MTA" --script "$xlsSpreadsheet = 51\r\n$Excel = New-Object -Com Excel.Application\r\n$WorkBook = $Excel.Workbooks.Open(\"${ficheiroExcel}\")\r\n$WorkBook.SaveAs(\"${diretorio}\\${nomeFicheiroExcel}.xlsx\", $xlsSpreadsheet)\r\n$Excel.Quit()" --comment Converter
+fileDelete --file "${ficheiroExcel}"
+repeat
+	delay --timeout "00:00:05"
+	isFileInUse --file "${diretorio}\\${nomeFicheiroExcel}.xlsx" success=value
+until --left "${success}" --operator "Is_True"
+logMessage --message "# Abra o arquivo Excel\r\n$excel = New-Object -ComObject Excel.Application\r\n$workbook = $excel.Workbooks.Open(\"${diretorio}\\${nomeFicheiroExcel}.xlsx\")\r\n\r\n# Selecione a planilha na qual voc√É¬™ deseja remover as linhas\r\n$worksheet = $workbook.Worksheets.Item(\"Sheet1\")\r\n\r\n# Remova as primeiras quatro linhas\r\n$range = $worksheet.Range(\"A1:A4\").EntireRow\r\n$range.Delete()\r\n\r\n# Salve as altera√É¬ß√É¬µes e feche o arquivo\r\n$workbook.Save()\r\n$workbook.Close()\r\n$excel.Quit()\r\n" --type "Info"
+
+powerShell --apartmentState "MTA" --script "# Abra o arquivo Excel\r\n$excel = New-Object -ComObject Excel.Application\r\n$workbook = $excel.Workbooks.Open(\"${diretorio}\\${nomeFicheiroExcel}.xlsx\")\r\n\r\nif ($workbook -eq $null) {\r\n    $d =  \"N√É¬£o foi poss√É¬≠vel abrir o arquivo\"\r\n    Write-Warning $d\r\n} else {\r\n\r\n    $worksheet = $workbook.Worksheets.Item(1)\r\n\r\n    if ($worksheet -eq $null) {\r\n         $d = \"A planilha especificada n√É¬£o existe no arquivo\"\r\n         Write-Warning $d\r\n    } else {\r\n        $range = $worksheet.Range(\"A1:A4\").EntireRow\r\n        $range.Delete()\r\n        $workbook.Save()\r\n        $d = \"Success\"\r\n        Write-Warning $d\r\n    }\r\n}\r\n    $workbook.Close()\r\n    $excel.Quit()" --comment "Remover as 4 primeira linhas" success=success errors=errors warn=warnings
+repeat
+	delay --timeout "00:00:05"
+	isFileInUse --file "${diretorio}\\${nomeFicheiroExcel}.xlsx" success=value
+until --left "${success}" --operator "Is_True"
+excelOpen --file "${diretorio}\\${nomeFicheiroExcel}.xlsx" --savechanges  excel=value
+excelSet --value Morada2 --file ${excel} --getfirstsheet  --row 1 --column 13 --comment "Existe duas colunas com o mesmo nome, ent√É¬£o precisei alterar o nome da segunda"
+excelGetTable --file ${excel} --getfirstsheet  --fromrow 5 --fromcolumn 1 --hasheaders  tabela=value
+excelClose --file ${excel}
+logMessage --message "A accao de copia da query241 e conversao do mesmo para xml foi procedida com sucesso.\r\n: ${success}" --type "Info"
+"	nP‘…F¥˙E∑s"ìâ!%*21.0.3.0

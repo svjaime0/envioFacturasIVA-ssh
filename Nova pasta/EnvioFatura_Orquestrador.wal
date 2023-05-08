@@ -1,0 +1,54 @@
+´defVar --name sucesso --type Boolean
+defVar --name tentativas --type Numeric
+defVar --name connection --type EmailConnection
+defVar --name destinatarioEmail --type List --innertype String
+onError --label TratamentoErro
+
+//***Precisamos aplicar alguma validaÃ§Ã£o que jÃ¡ foi exportado a Query e executado o DFVMOV7, para nÃ£o executar novamente em um reprocessamento
+goSub --label ExportarQueryBanka
+
+goSub --label ManipularDFVMOV7
+
+goSub --label ManipularProcvFactNCBK
+
+goSub --label ManipularProcvFacturasFG
+
+goSub --label FiltroBalcoes
+beginSub --name TratamentoErro
+logMessage --message "LOG ERRO\r\n- Linha: ${rpa:error.LineNumber}\r\n- Comando: ${rpa:error.Command}\r\n- Mensagem: ${rpa:error.Message}\r\n- Rotina: ${rpa:error.Routine}\r\n- Script: ${rpa:error.Script}" --type "Error"
+exchangeConnect --exchangeversion "Exchange2013" --exchangeurl "https://mail.bancovalor.ao/EWS/Exchange.asmx" --enablesslvalidation  --authenticationtype "BasicAuthentication" --mailusername "banco.valor@bancovalor.ao" --username "banco.valor" --mailpassword "v+HVl=#D\\,Dg" connection=value
+add --collection "${destinatarioEmail}" --value "email@bancovalor.ao"
+emailSend --connection ${connection} --to ${destinatarioEmail} --from "banco.valor@bancovalor.ao" --subject "RPA | Facturas IVA - Falha na execuÃ§Ã£o" --bodytype "Text" --body "<p>SaudaÃ§Ãµes CarÃ­ssimos,\n\nApresentou falha na execuÃ§Ã£o do robÃ´:\n</p><p>- Linha: ${rpa:error.LineNumber}</p><p>- Comando: ${rpa:error.Command}</p><p>\n\n\n- Mensagem: ${rpa:error.Message}</p><p>Banco Valor SA,\n\nCordialmente,\n</p>"
+emailDisconnect --connection ${connection}
+endSub
+beginSub --name ManipularProcvFactNCBK
+for --variable ${tentativas} --from 1 --to 3 --step 1
+	executeScript --handleError  --name "C:\\Users\\003925631\\Box\\CSM - Customer Success\\Partners and Clients\\Banco Valor\\Production\\EnvioFatura_ManipularProcvFactNCBK.wal" --comment EnvioFatura_ManipularProcvFactNCBK sucesso=value
+	if --left "${sucesso}" --operator "Is_True"
+		break
+	endIf
+next
+assert --message "Falha na execuÃ§Ã£o do robÃ´ ${rpa:subName}" --left "${sucesso}" --operator "Is_True"
+endSub
+beginSub --name ManipularProcvFacturasFG
+for --variable ${tentativas} --from 1 --to 3 --step 1
+	if --left "${sucesso}" --operator "Is_True"
+		executeScript --handleError  --name "C:\\Users\\003925631\\Box\\CSM - Customer Success\\Partners and Clients\\Banco Valor\\Production\\EnvioFatura_ManipularProcvFacturasFG.wal" --comment EnvioFatura_ManipularProcvFacturasFG sucesso=value
+		break
+	endIf
+next
+assert --message "Falha na execuÃ§Ã£o do robÃ´ ${rpa:subName}" --left "${sucesso}" --operator "Is_True"
+endSub
+beginSub --name FiltroBalcoes
+executeScript --handleError  --name "C:\\Users\\003925631\\Box\\CSM - Customer Success\\Partners and Clients\\Banco Valor\\Production\\EnvioFatura_FiltroBalcoes.wal" --comment EnvioFatura_FiltroBalcoes sucesso=value
+assert --message "Falha na execuÃ§Ã£o do robÃ´ ${rpa:subName}" --left "${sucesso}" --operator "Is_True"
+endSub
+beginSub --name ManipularDFVMOV7
+executeScript --name "C:\\Users\\003925631\\Box\\CSM - Customer Success\\Partners and Clients\\Banco Valor\\Production\\EnvioFatura_ManipularDFVMOV7.wal" --comment EnvioFatura_ManipularDFVMOV7 sucesso=value
+assert --message "Falha na execuÃ§Ã£o do robÃ´ ${rpa:subName}" --left "${sucesso}" --operator "Is_True"
+endSub
+beginSub --name ExportarQueryBanka
+executeScript --name "C:\\Users\\003925631\\Box\\CSM - Customer Success\\Partners and Clients\\Banco Valor\\Production\\Banka_LoginMacro.wal" --comment Banka_LoginMacro sucesso=value
+//**Tem um robÃ´ que exporta a query?
+assert --message "Falha na execuÃ§Ã£o do robÃ´ ${rpa:subName}" --left "${sucesso}" --operator "Is_True"
+endSub*23.0.1.0

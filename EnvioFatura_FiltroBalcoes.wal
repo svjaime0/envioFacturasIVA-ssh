@@ -1,0 +1,423 @@
+
+	�*�ے�N���h���defVar --name openFile --type TextFileReader
+defVar --name tabelaEmail_Invalido --type DataTable
+defVar --name caminhoTabelaEmail_Invalido --type String
+defVar --name linha --type Numeric
+defVar --name codigoBalcao --type String
+defVar --name codigoB --type Numeric
+defVar --name tabelaEmail_Vazio --type DataTable
+defVar --name tabelaEmail_Valida --type DataTable
+defVar --name tabelaClienteNaoExiste --type DataTable
+defVar --name nomeCliente --type String
+defVar --name emailCliente --type String
+defVar --name emailCampoVazio --type String
+defVar --name KimpaVita --type String
+defVar --name nomeDocumento --type String
+defVar --name balcaoDiversos --type String
+defVar --name lubango --type String
+defVar --name ceViana --type String
+defVar --name dolceVita --type String
+defVar --name vianaVila --type String
+defVar --name ceEscom --type String
+defVar --name benguela --type String
+defVar --name marinaBaia --type String
+defVar --name texto_regex --type String
+defVar --name path --type String --value "Z:\\DCCG - IVA\\Balcoes Relatorios"
+defVar --name anexoGlobal --type List --innertype String
+defVar --name anexo --type Boolean
+defVar --name openTxt --type TextFileReader
+defVar --name tabela501 --type DataTable
+defVar --name tabela503 --type DataTable
+defVar --name tabela504 --type DataTable
+defVar --name tabela505 --type DataTable
+defVar --name tabela507 --type DataTable
+defVar --name tabela508 --type DataTable
+defVar --name tabela509 --type DataTable
+defVar --name tabela510 --type DataTable
+defVar --name tabelaDiversos --type DataTable
+defVar --name connection --type EmailConnection
+defVar --name paraEmail --type List --innertype String --value "[valordirecto@bancovalor.ao]"
+defVar --name textoDolceVita --type String --value BalcaoDolceVita_503
+defVar --name fileEncontrado --type Boolean
+defVar --name ficheirosEncontrados --type Boolean
+defVar --name listaAnexo --type List --innertype String
+defVar --name csv --type String
+defVar --name directorioEncontrado --type Boolean
+defVar --name balcoes --type String
+defVar --name anexoFinal --type List --innertype String
+defVar --name contador --type Numeric
+defVar --name removido --type Boolean
+defVar --name emailKimpaVita --type List --innertype String --value "[angencia.kimpavita@bancovalor.ao]"
+defVar --name emailDolceVita --type List --innertype String --value "[angencia.dolcevita@bancovalor.ao]"
+defVar --name emailVianaVila --type List --innertype String --value "[angencia.vianavila@bancovalor.ao]"
+defVar --name emailCEEscom --type List --innertype String --value "[centrodeempresasescom@bancovalor.ao]"
+defVar --name emailBenguela --type List --innertype String --value "[angencia.benguela@bancovalor.ao]"
+defVar --name emailMarinaBaia --type List --innertype String --value "[angencia.marinabaia@bancovalor.ao]"
+defVar --name emailCEViana --type List --innertype String --value "[centrodeempresasviana@bancovalor.ao]"
+defVar --name emailLubango --type List --innertype String --value "[angencia.lubango@bancovalor.ao]"
+defVar --name emailBalcaoDiversos --type List --innertype String --value "[helia.pampas@bancovalor.ao]"
+defVar --name tabela --type DataTable
+defVar --name qtdEliminadas --type Numeric
+defVar --name aplicacaoOffice --type OfficeApplication
+defVar --name ficheiroSalvo --type String
+defVar --name transcritorTexto --type TextFileWriter
+defVar --name tabelaGeral --type DataTable
+defVar --name linhasGeral --type Numeric
+defVar --name sucess --type Boolean
+defVar --name excelBalcoes --type Excel
+defVar --name tabelaclienteNao_Existe --type DataTable
+defVar --name emCC --type List --innertype String --value "[valordirecto@bancovalor.ao]"
+defVar --name relatorioBalcoes --type Excel
+defVar --name valorObtido --type String
+defVar --name sucesso --type Boolean
+defVar --name relatorios --type Excel
+defVar --name email --type String
+defVar --name dataHora --type String
+defVar --name data_eHora --type DateTime
+defVar --name colunas --type Numeric
+//****** 1º RELATÓRIO DE EMAIL VALIDO*******
+goSub --label RelatorioEmailValido
+//****** 2º RELATÓRIO DE EMAIL INVÁLIDO*******
+goSub --label RelatorioEmailInvalido
+//****** 3º RELATÓRIO DE EMAIL VAZIO *******
+goSub --label RelatorioEmailVazio
+//****** 4º RELATÓRIO DE CLIENTE QUE NÃO EXISTEM_241 *******
+goSub --label RelatorioClienteNaoExiste
+//CONVERTER OS RELATÓRIOS BALCOES
+goSub --label ConverterRelatoriosBalcoes
+//#######################################################################
+//MOMENTO PARA OBTENÇÃO DO FICHEIRO CSV PARA ANEXO
+goSub --label EnviarEmail
+beginSub --name RelatorioEmailInvalido
+//****** Converter Ficheiro CSV para XLSX *******
+readCSV --filepath "Z:\\DCCG - IVA\\Relatorios de Erro\\report_WDG_ComEmail_Invalido.csv" --delimiter ";" --hasheaders  --missingfieldaction "ParseError" tabelaGeral=value linhasGeral=rows
+excelOpen --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\Relatorios Balcoes Geral.xlsx" sucess=success excelBalcoes=value
+excelSetTable --dataTable ${tabelaGeral} --headers  --file ${excelBalcoes} --sheet email_Invalido --row 1 --column 1
+excelClose --file ${excelBalcoes} --save 
+//******Termina aqui o Converter o ficheiro Global de CSV para XLSX*******
+excelOpen --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\Relatorios Balcoes Geral.xlsx" sucess=success excelBalcoes=value
+excelGetTable --file ${excelBalcoes} --sheet email_Invalido --entiretable  --hasheaders  tabelaEmail_Invalido=value linha=rows
+//openTextReader --share "None" --path "I:\\DCCG -IVA\\report_WDG_ComEmail_Invalido.csv" --encoding "Default" openFile=value
+//textReadTable --hasheaders  --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openFile} tabelaEmail_Invalido=value
+for --variable ${linha} --from 1 --to ${tabelaEmail_Invalido.Rows} --step 1
+	getTableCell --dataTable ${tabelaEmail_Invalido} --column 1 --row ${linha} codigoB=value
+	getTableCell --dataTable ${tabelaEmail_Invalido} --column 2 --row ${linha} nomeCliente=value
+	getTableCell --dataTable ${tabelaEmail_Invalido} --column 3 --row ${linha} nomeDocumento=value
+	getTableCell --dataTable ${tabelaEmail_Invalido} --column 4 --row ${linha} emailCliente=value
+	if --left "${codigoB}" --operator "Equal_To" --right 501
+		logMessage --message "[${codigoB}] - Balcão Kimpa Vita" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}[email_invalido]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoKimpaVita_501.txt" --encoding "Default" --writeasnewline  KimpaVita=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 503
+		logMessage --message "[${codigoB}] - Balcão Dolce Vita" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}[email_invalido]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoDolceVita_503.txt" --encoding "Default" --writeasnewline  dolceVita=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 504
+		logMessage --message "[${codigoB}] - Viana Vila" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}[email_invalido]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoVianaVila_504.txt" --encoding "Default" --writeasnewline  vianaVila=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 505
+		logMessage --message "[${codigoB}] - CE Escom" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}[email_invalido]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoCEEscom_505.txt" --encoding "Default" --writeasnewline  ceEscom=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 507
+		logMessage --message "[${codigoB}] - Benguela" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}[email_invalido]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoBenguela_507.txt" --encoding "Default" --writeasnewline  benguela=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 508
+		logMessage --message "[${codigoB}] - Marina Baía" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}[email_invalido]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoMarinaBaia_508.txt" --encoding "Default" --writeasnewline  marinaBaia=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 509
+		logMessage --message "[${codigoB}] - CE Viana" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}[email_invalido]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoCEViana_509.txt" --encoding "Default" --writeasnewline  ceViana=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 510
+		logMessage --message "[${codigoB}] - Lubango" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}[email_invalido]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoLubango_510.txt" --encoding "Default" --writeasnewline  lubango=value
+	else
+		logMessage --message "[${codigoB}] - Poderá fazer parte de outros balcões como (1, 506 , 9410). Devem ser enviadas à DCOM.\r\n\r\nOu não corresponde a uma das condições previamente parametrizadas" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}[email_invalido]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoDiversos.txt" --encoding "Default" --writeasnewline  balcaoDiversos=value
+	endIf
+	logMessage --message "." --type "Info"
+	//textFileClose --file ${openFile}
+next
+excelClose --file ${excelBalcoes} --save 
+delay --timeout "00:00:30"
+endSub
+beginSub --name RelatorioEmailValido
+//******Converter o ficheiro Global de CSV para XLSX*******
+readCSV --filepath "Z:\\DCCG - IVA\\Relatorios de Erro\\report_WDG_comEmailValido.csv" --delimiter ";" --hasheaders  --missingfieldaction "ParseError" tabelaGeral=value linhasGeral=rows
+excelOpen --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\Relatorios Balcoes Geral.xlsx" sucess=success excelBalcoes=value
+excelSetTable --dataTable ${tabelaGeral} --headers  --file ${excelBalcoes} --getfirstsheet  --row 1 --column 1
+excelClose --file ${excelBalcoes} --save 
+//******Termina aqui o Converter o ficheiro Global de CSC para XLSX*******
+excelOpen --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\Relatorios Balcoes Geral.xlsx" sucess=success excelBalcoes=value
+excelGetTable --file ${excelBalcoes} --getfirstsheet  --entiretable  --hasheaders  tabelaEmail_Valida=value linha=rows
+//openTextReader --share "None" --path "I:\\DCCG -IVA\\report_WDG_comEmailValido.csv" --encoding "Default" openFile=value
+//textReadTable --hasheaders  --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openFile} tabelaEmail_Valida=value
+for --variable ${linha} --from 1 --to ${tabelaEmail_Valida.Rows} --step 1
+	getTableCell --dataTable ${tabelaEmail_Valida} --column 1 --row ${linha} codigoB=value
+	getTableCell --dataTable ${tabelaEmail_Valida} --column 2 --row ${linha} nomeCliente=value
+	getTableCell --dataTable ${tabelaEmail_Valida} --column 3 --row ${linha} nomeDocumento=value
+	getTableCell --dataTable ${tabelaEmail_Valida} --column 4 --row ${linha} emailCliente=value
+	if --left "${codigoB}" --operator "Equal_To" --right 501
+		logMessage --message "[${codigoB}] - Balcão Kimpa Vita" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoKimpaVita_501.txt" --encoding "Default" --writeasnewline  kimpaVita=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 503
+		logMessage --message "[${codigoB}] - Balcão Dolce Vita" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoDolceVita_503.txt" --encoding "Default" --writeasnewline  dolceVita=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 504
+		logMessage --message "[${codigoB}] - Viana Vila" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoVianaVila_504.txt" --encoding "Default" --writeasnewline  vianaVila=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 505
+		logMessage --message "[${codigoB}] - CE Escom" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoCEEscom_505.txt" --encoding "Default" --writeasnewline  ceEscom=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 507
+		logMessage --message "[${codigoB}] - Benguela" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoBenguela_507.txt" --encoding "Default" --writeasnewline  benguela=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 508
+		logMessage --message "[${codigoB}] - Marina Baía" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoMarinaBaia_508.txt" --encoding "Default" --writeasnewline  marinaBaia=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 509
+		logMessage --message "[${codigoB}] - CE Viana" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoCEViana_509.txt" --encoding "Default" --writeasnewline  ceViana=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 510
+		logMessage --message "[${codigoB}] - Lubango" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoLubango_510.txt" --encoding "Default" --writeasnewline  lubango=value
+	else
+		logMessage --message "[${codigoB}] - Poderá fazer parte de outros balcões como (1, 506 , 9410). Devem ser enviadas à DCOM.\r\n\r\nOu não corresponde a uma das condições previamente parametrizadas" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};${emailCliente}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoDiversos.txt" --encoding "Default" --writeasnewline  balcaoDiversos=value
+	endIf
+	logMessage --message "." --type "Info"
+	//textFileClose --file ${openFile}
+next
+excelClose --file ${excelBalcoes} --save 
+delay --timeout "00:00:30"
+endSub
+beginSub --name RelatorioEmailVazio
+//****** Converter Ficheiro CSV para XLSX *******
+readCSV --filepath "Z:\\DCCG - IVA\\Relatorios de Erro\\report_WDG_CampoEmailVazio.csv" --delimiter ";" --hasheaders  --missingfieldaction "ParseError" tabelaGeral=value linhasGeral=rows
+excelOpen --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\Relatorios Balcoes Geral.xlsx" sucess=success excelBalcoes=value
+excelSetTable --dataTable ${tabelaGeral} --headers  --file ${excelBalcoes} --sheet email_Vazio --row 1 --column 1
+excelClose --file ${excelBalcoes} --save 
+//******Termina aqui o Converter o ficheiro Global de CSC para XLSX*******
+excelOpen --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\Relatorios Balcoes Geral.xlsx" sucess=success excelBalcoes=value
+excelGetTable --file ${excelBalcoes} --sheet email_Vazio --entiretable  --hasheaders  tabelaEmail_Vazio=value linha=rows
+//openTextReader --share "None" --path "I:\\DCCG -IVA\\report_WDG_CampoEmailVazio.csv" --encoding "Default" openFile=value
+//textReadTable --hasheaders  --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openFile} tabelaEmail_Vazio=value
+for --variable ${linha} --from 1 --to ${tabelaEmail_Vazio.Rows} --step 1
+	getTableCell --dataTable ${tabelaEmail_Vazio} --column 1 --row ${linha} codigoB=value
+	getTableCell --dataTable ${tabelaEmail_Vazio} --column 2 --row ${linha} nomeCliente=value
+	getTableCell --dataTable ${tabelaEmail_Valida} --column 3 --row ${linha} nomeDocumento=value
+	if --left "${codigoB}" --operator "Equal_To" --right 501
+		logMessage --message "[${codigoB}] - Balcão Kimpa Vita" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};[email_vazio]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoKimpaVita_501.txt" --encoding "Default" --writeasnewline  KimpaVita=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 503
+		logMessage --message "[${codigoB}] - Balcão Dolce Vita" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};[email_vazio]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoDolceVita_503.txt" --encoding "Default" --writeasnewline  dolceVita=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 504
+		logMessage --message "[${codigoB}] - Viana Vila" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};[email_vazio]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoVianaVila_504.txt" --encoding "Default" --writeasnewline  vianaVila=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 505
+		logMessage --message "[${codigoB}] - CE Escom" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};[email_vazio]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoCEEscom_505.txt" --encoding "Default" --writeasnewline  ceEscom=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 507
+		logMessage --message "[${codigoB}] - Benguela" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};[email_vazio]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoBenguela_507.txt" --encoding "Default" --writeasnewline  benguela=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 508
+		logMessage --message "[${codigoB}] - Marina Baía" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};[email_vazio]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoMarinaBaia_508.txt" --encoding "Default" --writeasnewline  marinaBaia=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 509
+		logMessage --message "[${codigoB}] - CE Viana" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};[email_vazio]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoCEViana_509.txt" --encoding "Default" --writeasnewline  ceViana=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 510
+		logMessage --message "[${codigoB}] - Lubango" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};[email_vazio]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoLubango_510.txt" --encoding "Default" --writeasnewline  lubango=value
+	else
+		logMessage --message "[${codigoB}] - Poderá fazer parte de outros balcões como (1, 506 , 9410). Devem ser enviadas à DCOM.\r\n\r\nOu não corresponde a uma das condições previamente parametrizadas" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente};${nomeDocumento};[email_vazio]" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoDiversos.txt" --encoding "Default" --writeasnewline  balcaoDiversos=value
+	endIf
+	logMessage --message "." --type "Info"
+	//textFileClose --file ${openFile}
+next
+excelClose --file ${excelBalcoes} --save 
+endSub
+beginSub --name RelatorioClienteNaoExiste
+//****** Converter Ficheiro CSV para XLSX *******
+readCSV --filepath "Z:\\DCCG - IVA\\Relatorios de Erro\\report_WDG_Cliente_Nao_Faz_Parte_Querie241.csv" --delimiter ";" --hasheaders  --missingfieldaction "ParseError" tabelaGeral=value linhasGeral=rows
+excelOpen --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\Relatorios Balcoes Geral.xlsx" sucess=success excelBalcoes=value
+excelSetTable --dataTable ${tabelaGeral} --headers  --file ${excelBalcoes} --sheet clienteNao_Existe --row 1 --column 1
+excelClose --file ${excelBalcoes} --save 
+//******Termina aqui o Converter o ficheiro Global de CSC para XLSX*******
+excelOpen --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\Relatorios Balcoes Geral.xlsx" sucess=success excelBalcoes=value
+excelGetTable --file ${excelBalcoes} --sheet clienteNao_Existe --entiretable  --hasheaders  tabelaClienteNaoExiste=value linha=rows
+//openTextReader --share "None" --path "I:\\DCCG -IVA\\relatorioCliente_Nao_Faz_Parte_Querie241_.csv" --encoding "Default" openFile=value
+//textReadTable --hasheaders  --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openFile} tabelaClienteNaoExiste=value
+for --variable ${linha} --from 1 --to ${tabelaClienteNaoExiste.Rows} --step 1
+	getTableCell --dataTable ${tabelaClienteNaoExiste} --column 1 --row ${linha} codigoB=value
+	getTableCell --dataTable ${tabelaClienteNaoExiste} --column 2 --row ${linha} nomeCliente=value
+	if --left "${codigoB}" --operator "Equal_To" --right 501
+		logMessage --message "[${codigoB}] - Balcão Kimpa Vita" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente}[Cliente_nao_Existe];${nomeDocumento}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoKimpaVita_501.txt" --encoding "Default" --writeasnewline  kimpaVita=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 503
+		logMessage --message "[${codigoB}] - Balcão Dolce Vita" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente}[Cliente_nao_Existe];${nomeDocumento}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoDolceVita_503.txt" --encoding "Default" --writeasnewline  dolceVita=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 504
+		logMessage --message "[${codigoB}] - Viana Vila" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente}[Cliente_nao_Existe];${nomeDocumento}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoVianaVila_504.txt" --encoding "Default" --writeasnewline  vianaVila=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 505
+		logMessage --message "[${codigoB}] - CE Escom" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente}[Cliente_nao_Existe];${nomeDocumento}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoCEEscom_505.txt" --encoding "Default" --writeasnewline  ceEscom=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 507
+		logMessage --message "[${codigoB}] - Benguela" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente}[Cliente_nao_Existe];${nomeDocumento}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoBenguela_507.txt" --encoding "Default" --writeasnewline  benguela=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 508
+		logMessage --message "[${codigoB}] - Marina Baía" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente}[Cliente_nao_Existe];${nomeDocumento}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoMarinaBaia_508.txt" --encoding "Default" --writeasnewline  marinaBaia=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 509
+		logMessage --message "[${codigoB}] - CE Viana" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente}[Cliente_nao_Existe];${nomeDocumento}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoCEViana_509.txt" --encoding "Default" --writeasnewline  ceViana=value
+	elseIf --left "${codigoB}" --operator "Equal_To" --right 510
+		logMessage --message "[${codigoB}] - Lubango" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente}[Cliente_nao_Existe];${nomeDocumento}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoLubango_510.txt" --encoding "Default" --writeasnewline  lubango=value
+	else
+		logMessage --message "[${codigoB}] - Poderá fazer parte de outros balcões como (1, 506 , 9410). Devem ser enviadas à DCOM.\r\n\r\nOu não corresponde a uma das condições previamente parametrizadas" --type "Info"
+		writeToFile --value "${codigoB};${nomeCliente}[Cliente_nao_Existe];${nomeDocumento}" --file "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoDiversos.txt" --encoding "Default" --writeasnewline  balcaoDiversos=value
+	endIf
+	logMessage --message "." --type "Info"
+	//textFileClose --file ${openFile}
+next
+excelClose --file ${excelBalcoes} --save 
+endSub
+beginSub --name ConverterRelatoriosBalcoes
+//*******Relatório Kimpa Vita*********
+openTextReader --share "None" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoKimpaVita_501.txt" --encoding "Default" openTxt=value
+textReadTable --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openTxt} tabela501=value
+writeTableToFile --delimiter "ByCharacters" --characters ";" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoKimpaVita501.csv" --dataTable ${tabela501} kimpaVita=value
+textFileClose --file ${openTxt}
+delay --timeout "00:00:05"
+//*******Relatório Dolce Vita*********
+openTextReader --share "None" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoDolceVita_503.txt" --encoding "Default" openTxt=value
+textReadTable --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openTxt} tabela503=value
+writeTableToFile --delimiter "ByCharacters" --characters ";" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoDolceVita503.csv" --dataTable ${tabela503} dolceVita=value
+textFileClose --file ${openTxt}
+delay --timeout "00:00:05"
+//*******Relatório Viana Vila*********
+openTextReader --share "None" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoVianaVila_504.txt" --encoding "Default" openTxt=value
+textReadTable --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openTxt} tabela504=value
+writeTableToFile --delimiter "ByCharacters" --characters ";" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoVianaVila504.csv" --dataTable ${tabela504} vianaVila=value
+textFileClose --file ${openTxt}
+delay --timeout "00:00:05"
+//*******Relatório CE Escom*********
+openTextReader --share "None" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoCEEscom_505.txt" --encoding "Default" openTxt=value
+textReadTable --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openTxt} tabela505=value
+writeTableToFile --delimiter "ByCharacters" --characters ";" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoCEEscom505.csv" --dataTable ${tabela505} ceEscom=value
+textFileClose --file ${openTxt}
+delay --timeout "00:00:05"
+//*******Relatório Benguela*********
+openTextReader --share "None" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoBenguela_507.txt" --encoding "Default" openTxt=value
+textReadTable --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openTxt} tabela507=value
+writeTableToFile --delimiter "ByCharacters" --characters ";" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoBenguela507.csv" --dataTable ${tabela507} benguela=value
+textFileClose --file ${openTxt}
+delay --timeout "00:00:05"
+//*******Relatório Marina Baia*********
+openTextReader --share "None" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoMarinaBaia_508.txt" --encoding "Default" openTxt=value
+textReadTable --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openTxt} tabela508=value
+writeTableToFile --delimiter "ByCharacters" --characters ";" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoMarinaBaia508.csv" --dataTable ${tabela508} marinaBaia=value
+textFileClose --file ${openTxt}
+delay --timeout "00:00:05"
+//*******Relatório CE Viana*********
+openTextReader --share "None" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoCEViana_509.txt" --encoding "Default" openTxt=value
+textReadTable --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openTxt} tabela509=value
+writeTableToFile --delimiter "ByCharacters" --characters ";" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoCEViana509.csv" --dataTable ${tabela509} ceViana=value
+textFileClose --file ${openTxt}
+delay --timeout "00:00:05"
+//*******Relatório Balcao Lubango*********
+openTextReader --share "None" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoLubango_510.txt" --encoding "Default" openTxt=value
+textReadTable --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openTxt} tabela510=value
+writeTableToFile --delimiter "ByCharacters" --characters ";" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoLubango510.csv" --dataTable ${tabela510} lubango=value
+textFileClose --file ${openTxt}
+delay --timeout "00:00:05"
+//*******Relatório Balcao Diversos*********
+openTextReader --share "None" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoDiversos.txt" --encoding "Default" openTxt=value
+textReadTable --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openTxt} tabelaDiversos=value
+writeTableToFile --delimiter "ByCharacters" --characters ";" --path "Z:\\DCCG - IVA\\Balcoes Relatorios\\BalcaoDiversos.csv" --dataTable ${tabelaDiversos} balcaoDiversos=value
+textFileClose --file ${openTxt}
+delay --timeout "00:00:45"
+endSub
+beginSub --name EnviarEmail
+ifFolder --path "Z:\\DCCG - IVA" directorioEncontrado=value
+smtpConnect --smtphost "mail.bancovalor.ao" --smtpport 587 --smtpusessl  connection=value
+exchangeConnect --exchangeversion "Exchange2013" --exchangeurl "https://mail.bancovalor.ao/EWS/Exchange.asmx" --enablesslvalidation  --username "banco.valor" --mailusername "banco.valor@bancovalor.ao" --mailpassword "v+HVl=#D\\,Dg" connection=value
+getFiles --path "${path}" --filemask csv anexoGlobal=value
+foreach --collection "${anexoGlobal}" --variable "${balcoes}"
+	//contains --value BalcaoKimpaVita501 --collection "${anexoGlobal}" fileEncontrado=value
+	collectionCopyIf --target "${anexoFinal}" --collection "${anexoGlobal}" --operator "Contains" --value "BalcaoKimpaVita501.csv"
+	if --left "${anexoFinal}" --operator "Is_Null_Or_Empty" --negate 
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório | Balcão Kimpa Vita" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nPartilhamos em anexo, o relatório do envio de facturas para o vosso conhecimento.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	else
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório | Balcão Kimpa Vita" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nO ficheiro em anexo encontra-se vazio queiram por favor analisar com maior urgência possível.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	endIf
+	clear --collection "${anexoFinal}"
+	delay --timeout "00:00:05"
+	collectionCopyIf --target "${anexoFinal}" --collection "${anexoGlobal}" --operator "Contains" --value "BalcaoDolceVita503.csv"
+	if --left "${anexoFinal}" --operator "Is_Null_Or_Empty" --negate 
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nPartilhamos em anexo, o relatório do envio de facturas para o vosso conhecimento.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	else
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório Balcão Dolce Vita" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nO ficheiro em anexo encontra-se vazio queiram por favor analisar com maior urgência possível.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	endIf
+	clear --collection "${anexoFinal}"
+	delay --timeout "00:00:05"
+	collectionCopyIf --target "${anexoFinal}" --collection "${anexoGlobal}" --operator "Contains" --value "BalcaoVianaVila504.csv"
+	if --left "${anexoFinal}" --operator "Is_Null_Or_Empty" --negate 
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nPartilhamos em anexo, o relatório do envio de facturas para o vosso conhecimento.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	else
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório Balcão Viana Vila" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nO ficheiro em anexo encontra-se vazio queiram por favor analisar com maior urgência possível.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	endIf
+	clear --collection "${anexoFinal}"
+	delay --timeout "00:00:05"
+	collectionCopyIf --target "${anexoFinal}" --collection "${anexoGlobal}" --operator "Contains" --value "BalcaoCEEscom505.csv"
+	if --left "${anexoFinal}" --operator "Is_Null_Or_Empty" --negate 
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nPartilhamos em anexo, o relatório do envio de facturas para o vosso conhecimento.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	else
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório Balcão CEEscom" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nO ficheiro em anexo encontra-se vazio queiram por favor analisar com maior urgência possível.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	endIf
+	clear --collection "${anexoFinal}"
+	delay --timeout "00:00:05"
+	collectionCopyIf --target "${anexoFinal}" --collection "${anexoGlobal}" --operator "Contains" --value "BalcaoBenguela507.csv"
+	if --left "${anexoFinal}" --operator "Is_Null_Or_Empty" --negate 
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nPartilhamos em anexo, o relatório do envio de facturas para o vosso conhecimento.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	else
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório Balcão Benguela" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nO ficheiro em anexo encontra-se vazio queiram por favor analisar com maior urgência possível.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	endIf
+	clear --collection "${anexoFinal}"
+	delay --timeout "00:00:05"
+	collectionCopyIf --target "${anexoFinal}" --collection "${anexoGlobal}" --operator "Contains" --value "BalcaoMarinaBaia508.csv"
+	if --left "${anexoFinal}" --operator "Is_Null_Or_Empty" --negate 
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nPartilhamos em anexo, o relatório do envio de facturas para o vosso conhecimento.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	else
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório Balcão Marina Baia" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nO ficheiro em anexo encontra-se vazio queiram por favor analisar com maior urgência possível.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	endIf
+	clear --collection "${anexoFinal}"
+	delay --timeout "00:00:05"
+	collectionCopyIf --target "${anexoFinal}" --collection "${anexoGlobal}" --operator "Contains" --value "BalcaoCEViana509.csv"
+	if --left "${anexoFinal}" --operator "Is_Null_Or_Empty" --negate 
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nPartilhamos em anexo, o relatório do envio de facturas para o vosso conhecimento.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	else
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório Balcão CE Viana" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nO ficheiro em anexo encontra-se vazio queiram por favor analisar com maior urgência possível.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	endIf
+	clear --collection "${anexoFinal}"
+	delay --timeout "00:00:05"
+	collectionCopyIf --target "${anexoFinal}" --collection "${anexoGlobal}" --operator "Contains" --value "BalcaoLubango510.csv"
+	if --left "${anexoFinal}" --operator "Is_Null_Or_Empty" --negate 
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nPartilhamos em anexo, o relatório do envio de facturas para o vosso conhecimento.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	else
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório Balcão Lubango" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nO ficheiro em anexo encontra-se vazio queiram por favor analisar com maior urgência possível.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	endIf
+	clear --collection "${anexoFinal}"
+	delay --timeout "00:00:05"
+	collectionCopyIf --target "${anexoFinal}" --collection "${anexoGlobal}" --operator "Contains" --value "BalcaoDiversos.csv"
+	if --left "${anexoFinal}" --operator "Is_Null_Or_Empty" --negate 
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nPartilhamos em anexo, o relatório do envio de facturas para o vosso conhecimento.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+		clear --collection "${anexoFinal}"
+	else
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Facturas IVA - Relatório Balcão Diversos" --bodytype "Text" --body "Saudações Caríssimos,\r\n\r\nO ficheiro em anexo encontra-se vazio queiram por favor analisar com maior urgência possível.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFinal}
+	endIf
+	//stopExecution
+endFor
+delay --timeout "00:00:45"
+endSub"	����<��@� lM��ƌ*21.0.3.0

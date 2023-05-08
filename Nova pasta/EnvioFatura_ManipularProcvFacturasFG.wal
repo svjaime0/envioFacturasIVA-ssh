@@ -1,0 +1,279 @@
+¬¢defVar --name procvArquivo --type Excel
+defVar --name querieArquivo --type Excel
+defVar --name tabelaProcv --type DataTable
+defVar --name tabelaQuerie --type DataTable
+defVar --name sucess --type Boolean
+defVar --name valorNomeObtidoTabelaProcv --type String
+defVar --name valorNomeObtidoTabelaEmail --type String
+defVar --name valorNomeDocumentoObtido --type String
+defVar --name conexaoSMTP --type EmailConnection
+defVar --name portaSMTP --type Numeric --value 25
+defVar --name connection --type EmailConnection
+defVar --name valorNomeDocumentoObtido_regex --type String
+defVar --name dataAtual --type DateTime
+defVar --name mes --type Numeric
+defVar --name dia --type Numeric
+defVar --name ano --type Numeric
+defVar --name path --type String --value "I:\\\\DCCG -IVA\\\\DCCG_NOVO20_TESTE\\\\20 EXXIS\\\\FACTURA_PDF\\\\FG"
+defVar --name diretorioObtido --type Boolean
+defVar --name diretorioObtidoAno --type Boolean
+defVar --name diretorioObtidoMes --type Boolean
+defVar --name Documento --type Boolean
+defVar --name diretorioObtidoMesEncontrado --type List --innertype String
+defVar --name dataProcvObtidaConvertida --type DateTime
+defVar --name anoProcvObtido --type DateTime
+defVar --name anoProcv --type Numeric
+defVar --name valorAnoObtidoProcv --type Numeric
+defVar --name mesProcv --type Numeric
+defVar --name valorMesProcvObtido --type Numeric
+defVar --name diaProcv --type Numeric
+defVar --name valorDiaProcvObtido --type Numeric
+defVar --name diretorioObtidoAnoMesDia --type Boolean
+defVar --name dataProcvObtida --type DateTime
+defVar --name dataProcvObtida02 --type String
+defVar --name dataSomenteConvertida --type String
+defVar --name dataExtraida --type String
+defVar --name directorioRPA --type Boolean
+defVar --name querieExiste --type Boolean
+defVar --name nomeMaquinaVirtual --type String --value "WSBVDBT14.bancovalor.local"
+defVar --name ficheiroRPAExitste --type List --innertype String
+defVar --name directorioRPA67 --type String
+defVar --name maquinaVirtual67 --type Boolean
+defVar --name directorioRPA_67 --type Boolean
+defVar --name ficheiroExiste --type Boolean
+defVar --name directorioExiste --type Boolean
+defVar --name emailObtidoFG --type String
+defVar --name dataEmailObtidaConvertida --type DateTime
+defVar --name anexoBooleano --type Boolean
+defVar --name emailConvertido --type Numeric
+defVar --name nomeConvertidoEmNumero --type Numeric
+defVar --name nomeFicheiroAlterado --type String
+defVar --name sucess1 --type Boolean
+defVar --name numeroCliente --type Numeric
+defVar --name nomeDocumentoFG --type String
+defVar --name nomeDocumentoFG_regex --type String
+defVar --name dataLocalRelatorioEmailFG --type DateTime
+defVar --name textoGravadoSemEmailFG --type String
+defVar --name dataLocalRelatorioEmail --type DateTime
+defVar --name dataLocalRelatorioSemEmailFG --type DateTime
+defVar --name dataLocalRelatorioComEmail --type DateTime
+defVar --name dataLocalRelatorioComEmailFG --type DateTime
+defVar --name textoGravadoComEmailFG --type String
+defVar --name openTextoFG --type TextFileReader
+defVar --name tabelaRelatorioComEmailFG --type DataTable
+defVar --name tabelaGravadaNoFicheiroCSV_FG --type String
+defVar --name openTextoSemEmailFG --type TextFileReader
+defVar --name tabelaRelatorioSemEmailFG --type DataTable
+defVar --name tabelaGravadaNoFicheiroSemEmailCSV_FG --type String
+defVar --name dataHora --type DateTime
+defVar --name linha --type Numeric --value 1
+defVar --name codigoBalcao --type String
+defVar --name linhaValor --type Numeric
+defVar --name valor --type String
+defVar --name tabelaResultado --type DataTable
+defVar --name textoGravado1 --type String
+defVar --name email --type String
+defVar --name qtdEmailEncontrado --type Numeric
+defVar --name openTxt --type TextFileReader
+defVar --name tabelaClienteNaoExiste --type DataTable
+defVar --name tabelaClteNaoExiste --type String
+defVar --name tabelaClienteEmailVazio --type DataTable
+defVar --name tabelaClienteCampoEmailVazio --type String
+defVar --name tabelaClienteEmailValido --type DataTable
+defVar --name tabelaClienteComEmailValido --type String
+defVar --name tabelaClienteEmail_Invalido --type DataTable
+defVar --name tabelaClienteComEmail_Invalido --type String
+defVar --name openCSV --type TextFileReader
+defVar --name dataObtida --type DateTime
+defVar --name listaDestinatarios --type List --innertype String --value "[valordirecto@bancovalor.ao]"
+defVar --name documentoFG --type Boolean
+defVar --name anexoFG --type List --innertype String
+defVar --name tabelaCSV --type DataTable
+defVar --name emailObtido --type String
+defVar --name paraEmail --type List --innertype String --value "[valordirecto@bancovalor.ao]"
+defVar --name linhaEmail --type Numeric
+defVar --name nomeCliente --type String
+//ConexÃ£o SMTP para o envio de alarmÃ­sticas
+smtpConnect --smtphost "mail.bancovalor.ao" --smtpport 587 --authenticationtype "BasicAuthentication" --smtpusessl  connection=value
+exchangeConnect --exchangeversion "Exchange2013" --exchangeurl "https://mail.bancovalor.ao/EWS/Exchange.asmx" --enablesslvalidation  --authenticationtype "BasicAuthentication" --mailusername "banco.valor@bancovalor.ao" --username "banco.valor" --mailpassword "v+HVl=#D\\,Dg" connection=value
+//Verificar se o Diretorio DCCG-IVA
+ifFolder --path "I:\\DCCG -IVA" directorioExiste=value
+if --left "${directorioExiste}" --operator "Is_True"
+else
+	//Se nÃ£o existir, enviar email para DSI em CC DCD e Contabilidade
+	emailSend --connection ${connection} --to ${listaDestinatarios} --from "banco.valor@bancovalor.ao" --subject "DCCG_IVA | Verificar o mapeamento da referida pasta" --bodytype "Text" --body "SaudaÃ§Ãµes CarÃ­ssimos!\r\n\r\nFoi identificado ausÃªncia da PASTA DCCG-IVA.\r\n\r\nQueiram por favor verificar o respectivo Mapeamento.\r\n\r\n\r\nAgrademos a vossa cÃ©lere validaÃ§Ã£o,\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+	stopExecution
+endIf
+//Verifica se o ficheiro DFVMOV7 existe na DCCG-IVA
+ifFile --file "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7_Convertido.xlsx" ficheiroExiste=value
+if --left "${ficheiroExiste}" --operator "Is_True"
+else
+	//ENVIAR EMAIL AOS SPONSORÂ´S
+	emailSend --connection ${connection} --to ${listaDestinatarios} --from "banco.valor@bancovalor.ao" --subject "DCCG_IVA - DFVMOV7 | Verificar o ficheiro" --bodytype "Text" --body "SaudaÃ§Ãµes CarÃ­ssimos!\r\n\r\nFoi identificado ausÃªncia do ficheiro DFVMOV7\r\n\r\nQueiram por favor verificar o respectivo ficheiro e salvar na pasta habitual mantendo o nome de origem.\r\n\r\n\r\nAgrademos a vossa cÃ©lere validaÃ§Ã£o,\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+	stopExecution
+	//Se nÃ£o existir, enviar e-mail aos SponsorÂ´s
+endIf
+//Verifica se o Diretorio RPA Existe
+ifFolder --path "I:\\DCCG -IVA\\RPAROBOT bvalor01" directorioRPA=value
+if --left "${directorioRPA}" --operator "Is_True"
+else
+	//ENVIAR EMAIL AOS SPONSORÂ´S
+	emailSend --connection ${connection} --to ${listaDestinatarios} --from "banco.valor@bancovalor.ao" --subject "DCCG_IVA - Querie Banka | Verificar o ficheiro" --bodytype "Text" --body "SaudaÃ§Ãµes CarÃ­ssimos!\r\n\r\nFoi identificado ausÃªncia do ficheiro QuerieBanka\r\n\r\nQueiram por favor verificar o respectivo ficheiro e salvar na pasta habitual mantendo o nome de origem.\r\n\r\n\r\nAgrademos a vossa cÃ©lere validaÃ§Ã£o,\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+	stopExecution
+endIf
+//Verifica se o ficheiro QUERIE existe no Directorio RPA
+ifFile --file "I:\\DCCG -IVA\\RPAROBOT bvalor01\\RPAIVAFACT202210.xlsx" querieExiste=value
+if --left "${querieExiste}" --operator "Is_True"
+	//Abrir ficheiro da Querie
+	//#Converter a Querie241 CSV para XLSX#
+	//readCSV --filepath "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7.csv" --delimiter ";" --hasheaders  --missingfieldaction "ParseError" tabela=value
+	//excelOpen --file "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7_Convertido.xlsx" eXcelConversao=value
+	//excelSetTable --dataTable ${tabela} --headers  --file ${eXcelConversao} --getfirstsheet  --row 1 --column 1 sucesso=value
+	//excelClose --file ${eXcelConversao} --save 
+else
+	//ENVIAR EMAIL AOS SPONSORÂ´S
+	emailSend --connection ${connection} --to ${listaDestinatarios} --from "banco.valor@bancovalor.ao" --subject "DCCG_IVA - Querie Banka | Verificar o ficheiro" --bodytype "Text" --body "SaudaÃ§Ãµes CarÃ­ssimos!\r\n\r\nFoi identificado ausÃªncia do ficheiro QuerieBanka\r\n\r\nQueiram por favor verificar o respectivo ficheiro e salvar na pasta habitual mantendo o nome de origem.\r\n\r\n\r\nAgrademos a vossa cÃ©lere validaÃ§Ã£o,\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+	stopExecution
+	//Se nÃ£o existir, enviar email aos Sponsor
+endIf
+//#######################################################################
+//****PRIMEIRO MOMENTO DA ORQUESTRAÃÃO****
+//PREPARAÃÃO DOS RELATORIOS
+//#######################################################################
+getCurrentDateAndTime --localorutc "LocalTime" dataHora=value
+excelOpen --file "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7_Convertido.xlsx" procvArquivo=value
+excelGetTable --file ${procvArquivo} --sheet folhaFinal --entiretable  --hasheaders  tabelaProcv=value
+excelOpen --file "I:\\DCCG -IVA\\RPAROBOT bvalor01\\RPAIVAFACT202210.xlsx" querieArquivo=value
+excelGetTable --file ${querieArquivo} --getfirstsheet  --entiretable  --hasheaders  tabelaQuerie=value
+excelClose --file ${procvArquivo}
+excelClose --file ${querieArquivo}
+for --variable ${linha} --from 1 --to ${tabelaProcv.Rows} --step 1
+	getTableCell --dataTable ${tabelaQuerie} --column 1 --row ${linha} codigoBalcao=value
+	getTableCell --dataTable ${tabelaProcv} --column 16 --row ${linha} nomeDocumentoFG=value
+	getTableCell --dataTable ${tabelaProcv} --column 14 --row ${linha} numeroCliente=value
+	getTableCell --dataTable ${tabelaProcv} --column 6 --row ${linha} nomeCliente=value
+	findTableCell --dataTable ${tabelaQuerie} --value "${numeroCliente}" --search "Columns" --index 4 --direction "Left2RightTop2Bottom" --occurrencetype "First" sucess=success linhaValor=row valor=value
+	if --left "${sucess}" --operator "Is_True" --negate 
+		logMessage --message "Nao Encontrou [${numeroCliente}]" --type "Info"
+		writeToFile --value "${codigoBalcao};${nomeCliente}[Cliente nÃ£o existe];${nomeDocumentoFG};${dataHora}" --file "I:\\DCCG -IVA\\Relatorios de Erro\\Cliente_NÃ£o_Existe_na_Querie241.txt" --encoding "Default" --writeasnewline  textoGravado1=value
+		//Voltar ao princÃ­pio para pesquisar novamente!
+		continue
+	else
+		filterTable --where "Cliente=(\'${numeroCliente}\')" --dataTable ${tabelaQuerie} tabelaResultado=value linhaEmail=rows
+		logMessage --message "Encontrou cliente [${numeroCliente}]" --type "Info"
+		getTableCell --dataTable ${tabelaResultado} --column 12 --row ${linhaEmail} --comment EMAILMORADA email=value
+		goSub --label ValidarEmail
+	endIf
+	logMessage --message "." --type "Info"
+	//replaceText --texttoparse "${numeroCliente}" --textpattern " " --replacement " " numeroCliente=value
+	//if --left "${sucess}" --operator "Is_True"
+	//Voltar a substituir EspaÃ§os
+	//goSub --label substituirEspaco
+	//endIf
+next
+delay --timeout "00:00:45"
+//CONVERTER OS RELATÃRIOS (Cliente - Existe / NÃ£o existe / Email invÃ¡lido / Email vÃ¡lido) de TXT para CSV
+//*******RelatÃ³rio 1* Cliente nÃ£o existe na querie 241*********
+openTextReader --share "None" --path "I:\\DCCG -IVA\\Relatorios de Erro\\Cliente_NÃ£o_Existe_na_Querie241.txt" --encoding "Default" openTxt=value
+textReadTable --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openTxt} tabelaClienteNaoExiste=value
+writeTableToFile --delimiter "ByCharacters" --characters ";" --path "I:\\DCCG -IVA\\Relatorios de Erro\\report_WDG_Cliente_Nao_Faz_Parte_Querie241.csv" --dataTable ${tabelaClienteNaoExiste} tabelaClteNaoExiste=value
+textFileClose --file ${openTxt}
+delay --timeout "00:00:05"
+//*******RelatÃ³rio 2* Cliente existe mas, com Campo E-mail Vazio na querie 241*********
+openTextReader --share "None" --path "I:\\DCCG -IVA\\Relatorios de Erro\\Cliente_Campo_Email_Vazio.txt" --encoding "Default" openTxt=value
+textReadTable --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openTxt} tabelaClienteEmailVazio=value
+writeTableToFile --delimiter "ByCharacters" --characters ";" --path "I:\\DCCG -IVA\\Relatorios de Erro\\report_WDG_CampoEmailVazio.csv" --dataTable ${tabelaClienteEmailVazio} tabelaClienteCampoEmailVazio=value
+textFileClose --file ${openTxt}
+delay --timeout "00:00:05"
+//*******RelatÃ³rio 3* Cliente Existe na querie 241 e com E-mail VÃ¡lido*********
+openTextReader --share "None" --path "I:\\DCCG -IVA\\Relatorios de Erro\\Cliente_Email_Valido.txt" --encoding "Default" openTxt=value
+textReadTable --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openTxt} tabelaClienteEmailValido=value
+writeTableToFile --delimiter "ByCharacters" --characters ";" --path "I:\\DCCG -IVA\\Relatorios de Erro\\report_WDG_comEmailValido.csv" --dataTable ${tabelaClienteEmailValido} tabelaClienteComEmailValido=value
+textFileClose --file ${openTxt}
+delay --timeout "00:00:05"
+//*******RelatÃ³rio 4* Cliente Existe na querie 241 mas, com E-mail InvÃ¡lido VÃ¡lido*********
+openTextReader --share "None" --path "I:\\DCCG -IVA\\Relatorios de Erro\\Cliente_Email_Invalido.txt" --encoding "Default" openTxt=value
+textReadTable --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openTxt} tabelaClienteEmail_Invalido=value
+writeTableToFile --delimiter "ByCharacters" --characters ";" --path "I:\\DCCG -IVA\\Relatorios de Erro\\report_WDG_ComEmail_Invalido.csv" --dataTable ${tabelaClienteEmail_Invalido} tabelaClienteComEmail_Invalido=value
+textFileClose --file ${openTxt}
+delay --timeout "00:00:45"
+//#######################################################################
+//****SEGUNDO MOMENTO DA ORQUESTRAÃÃO****
+//OBTER A COLUNA 1 DA FOLHA FG PARA LOCALIZAR O DOCUMENTO Ã ANEXAR
+//#######################################################################
+excelOpen --file "I:\\DCCG -IVA\\Ficheiro EXIPRO\\DFVMOV7_Convertido.xlsx" sucess=success procvArquivo=value
+excelGetTable --file ${procvArquivo} --sheet folhaFinal --entiretable  --hasheaders  tabelaProcv=value
+//ABRIR RELATORIO DE EMAIL VALIDO CSV/TXT
+openTextReader --share "ReadWrite" --path "I:\\DCCG -IVA\\Relatorios de Erro\\report_WDG_comEmailValido.csv" --encoding "Default" openCSV=value
+for --variable ${linha} --from 1 --to ${tabelaProcv.Rows} --step 1
+	getTableCell --dataTable ${tabelaProcv} --column 1 --row ${linha} --comment "Obter a Data da tabela em causa da coluna A - DataMov" dataExtraida=value
+	textToDateTime --culture "pt-PT" --text "${dataExtraida}" dataObtida=value
+	getDatePart --date "${dataObtida}" --type "Years" ano=value
+	getDatePart --date "${dataObtida}" --type "Months" mes=value
+	getDatePart --date "${dataObtida}" --type "Days" dia=value
+	delay --timeout "00:00:05"
+	getTableCell --dataTable ${tabelaProcv} --column 16 --row ${linha} nomeDocumentoFG=value
+	//getTableCell --dataTable ${tabelaConsulta} --column 3 --row ${linha} numeroDocumento=value
+	getRegex --text "${nomeDocumentoFG}" --regexPattern "GF_202\\\\d{1}FG_(\\\\d{4,})" --regexOptions "0" --groupnumber 1 --comment "OBTER O  CLIENTE" nomeDocumentoFG_regex=value
+	//*****PATH******
+	//VERIFICAR DIRETORIO NÂº DE DOCUMENTO EXIPRO coluna 3 da FOLHA
+	ifFolder --path "${path}\\nomeDocumentoFG_regex" --comment "verifica se o diretÃ³rio do cliente existe, se nÃ£o existir decidir o que o script vai comunicar" diretorioObtido=value
+	if --left "${diretorioObtido}" --operator "Is_True"
+		ifFolder --path "${path}\\${nomeDocumentoFG_regex}\\${ano}\\${mes}\\${dia}" --comment "verifica se o diretÃ³rio ANO-MÃS-DIA existe" diretorioObtidoAnoMesDia=value
+	else
+		logMessage --message "[${nomeDocumentoFG}] NÃ£o encontrado no diretÃ³rio FG!" --type "Info"
+		emailSend --connection ${connection} --to ${listaDestinatarios} --from "banco.valor@bancovalor.ao" --subject "RPA - Envio de Facturas FG | O Documento nÃ£o consta no DirectÃ³rio FG!" --bodytype "Text" --body "SaudaÃ§Ãµes CarÃ­ssimos,\r\n\r\nNÃ£o foi possÃ­vel identificar o documento no Diretorio FG!\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+		continue
+	endIf
+	if --left "${diretorioObtidoAnoMesDia}" --operator "Is_True"
+		ifFile --file "${path}\\${nomeDocumentoFG_regex}\\${ano}\\${mes}\\${dia}\\${nomeDocumentoFG}.pdf" --comment "VERIFICAR SE A FATURA EXISTE NO DIRETÃRIO, " documentoFG=value
+	else
+		logMessage --message "[${nomeDocumentoFG}] NÃ£o existe no diretÃ³rio FG!" --type "Info"
+		emailSend --connection ${connection} --to ${listaDestinatarios} --from "banco.valor@bancovalor.ao" --subject "RPA - Envio de Facturas FG | [${nomeDocumentoFG}] - Documento nÃ£o existe!" --bodytype "Text" --body "SaudaÃ§Ãµes CarÃ­ssimos,\r\n\r\nO ficheiro supracitado nÃ£o existe no diretÃ³rio!\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+		continue
+	endIf
+	if --left "${documentoFG}" --operator "Is_True"
+		//OBTER DOCUMENTO pdf
+		getFiles --path "${path}\\${nomeDocumentoFG_regex}\\${ano}\\${mes}\\${dia}" --filemask pdf anexoFG=value
+		delay --timeout "00:00:30"
+		//****Obter Tabela de relatÃ³rio de email vÃ¡lido****
+		textReadTable --hasheaders  --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openCSV} tabelaCSV=value
+		getTableCell --dataTable ${tabelaCSV} --column 4 --row ${linha} emailObtido=value
+		mapTableRow --dataTable ${tabelaCSV} --row ${linha} --mappings "name=Email_Valido=${emailObtido}"
+		add --collection "${paraEmail}" --value "${emailObtido}"
+		//add --collection "${anexoNCBK02}" --value "${anexoNCBK}"
+		//clear --collection "${anexoNCBK02}"
+		//Enviar email aos destinatÃ¡rios com o anexo
+		emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --subject "BANCO VALOR | Facturas GenÃ©ricas" --bodytype "Text" --body "Caro(a) Cliente,\r\n\r\nPartilhamos em anexo a Factura GenÃ©rica para o seu conhecimento.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente," --attachments ${anexoFG}
+		//***Remover o destinatÃ¡rio***
+		clear --collection "${paraEmail}"
+		logMessage --message "Enviada!" --type "Info"
+	else
+		//NOTIFICA POR EMAIL OS SPONSORÂ´S
+		//SE NÃO FOR VERDADEIRO PULA PARA O CLIENTE
+		logMessage --message "[${nomeDocumentoFG}] - NÃ£o foi possÃ­vel identificar o anexo para o respectivo anexo!" --type "Info"
+		emailSend --connection ${connection} --to ${listaDestinatarios} --from "banco.valor@bancovalor.ao" --subject "RPA - Envio de Facturas GenÃ©ricas | PDF [${nomeDocumentoFG}] nÃ£o encontrado" --bodytype "Text" --body "SaudaÃ§Ãµes CarÃ­ssimos,\r\n\r\nNÃ£o foi possÃ­vel encontrar o documento supracitado para o respectivo anexo e envio ao cliente.\r\n\r\n\r\nBanco Valor SA,\r\n\r\nCordialmente,"
+		continue
+	endIf
+next
+beginSub --name ValidarEmail
+if --left "${email}" --operator "Is_Null_Or_Empty"
+	logMessage --message "- Campo Email Vazio" --type "Info"
+	writeToFile --value "${codigoBalcao};${nomeCliente};${nomeDocumentoFG};[Campo E-mail Vazio];${dataHora}" --file "I:\\DCCG -IVA\\Relatorios de Erro\\Cliente_Campo_Email_Vazio.txt" --encoding "Default" --writeasnewline  textoGravado1=value
+else
+	logMessage --message "- Email encontrado[${email}]" --type "Info"
+	countTextOccurrences --text "${email}" --useRegex  --regexPattern "^([a-z]){1,}([a-z0-9._-]){1,}([@]){1}([\\S+]){2,}([.]){1}([a-z]){2,}|([0-9a-z])([a-z0-9._-]){1,}[@]([a-z]){1,}([.]){1}[a-z\\.]{2,}" --regexOptions "Multiline" --startindex 1 qtdEmailEncontrado=value
+	if --left "${qtdEmailEncontrado}" --operator "Greater_Than" --right 0
+		logMessage --message "- - Email VÃ¡lido" --type "Info"
+		writeToFile --value "${codigoBalcao};${nomeCliente};${nomeDocumentoFG};${email};${dataHora}" --file "I:\\DCCG -IVA\\Relatorios de Erro\\Cliente_Email_Valido.txt" --encoding "Default" --writeasnewline  textoGravado1=value
+	else
+		logMessage --message "- - Email Invalido [${email}]" --type "Info"
+		writeToFile --value "${codigoBalcao};${nomeCliente};${nomeDocumentoFG};${email}[E-mail Invalido];${dataHora}" --file "I:\\DCCG -IVA\\Relatorios de Erro\\Cliente_Email_Invalido.txt" --encoding "Default" --writeasnewline  textoGravado1=value
+	endIf
+endIf
+endSub
+beginSub --name substituirEspaco
+//replaceText --texttoparse "${numeroCliente}" --textpattern " " --replacement " " numeroCliente=value
+//findTableCell --dataTable ${tabelaQuerie} --value "${numeroCliente}" --search "Columns" --index 6 --direction "Left2RightTop2Bottom" --occurrencetype "First" sucess=success linhaValor=row valor=value
+//filterTable --where "Nome=(\'${numeroCliente}\')" --dataTable ${tabelaQuerie} tabelaResultado=value
+endSub*23.0.1.0

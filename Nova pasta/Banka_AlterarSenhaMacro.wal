@@ -1,0 +1,58 @@
+�*defVar --name janela01 --type Window
+defVar --name idProcesso --type Numeric
+defVar --name sucesso --type Boolean
+defVar --name janela02 --type Window
+defVar --name macro --type String
+defVar --name caminhoPadrao --type String
+defVar --name banka --type String
+defVar --name novaBanka --type Numeric
+setVar --name "${caminhoPadrao}" --value "C:\\IBM_RPA\\BancoValor" --comment "Definir um diretorio padrão para salvar os arquivos"
+
+goSub --label ObterSenha
+goSub --label CriarMacroAtualizada
+goSub --label ExecutarMacro
+goSub --label AtualizarNovaSenha
+return
+beginSub --name ExecutarMacro
+launchOrAttach --executablepath "C:\\Program Files (x86)\\IBM\\Client Access\\Emulator\\pcsws.exe" --parameters BANCOVALOR01 --useregex  --regexPattern "Session*" --regexOptions "0" --safesearch  --timeout "00:01:30" janela01=value idProcesso=processId sucesso=success
+attachWindow --window ${janela01}
+delay --timeout "00:00:10"
+keyboard --type "KeyPress" --key "LMenu"
+keyboard --type "KeyDown" --key "A"
+keyboard --type "KeyUp" --key "LMenu"
+delay --timeout "00:00:05"
+keyboard --type "KeyDown" --key "F"
+//keyboard --type "KeyDown" --key "Up"
+delay --timeout "00:00:05"
+keyboard --type "KeyDown" --key "Return"
+delay --timeout "00:01:00"
+findWindow --useregex  --regexPattern "Session*" --regexOptions "0" --classname IEFrame --byparent  --window ${janela01} --safesearch  janela02=value idProcesso=processId sucesso=success
+delay --timeout "00:01:00"
+onError --executenext 
+attachWindow --window ${janela02}
+closeWindow --timeout "00:01:30" --window ${janela02} sucesso=value
+attachWindow --window ${janela01}
+closeWindow --timeout "00:01:30" --window ${janela01} sucesso=value
+endSub
+beginSub --name CriarMacroAtualizada
+setVar --name "${macro}" --value "[PCOMM SCRIPT HEADER]\r\nLANGUAGE=VBSCRIPT\r\nDESCRIPTION=\r\n[PCOMM SCRIPT SOURCE]\r\nOPTION EXPLICIT\r\nautECLSession.SetConnectionByName(ThisSessionName)\r\n\r\n\'declarar as variaveis\r\n\r\nDim banco\r\nDim num\r\nDim i\r\n\r\n\'Aplicacao da logica para incrementar mais 1 ao numero padrao\r\n\r\n\r\n\r\n\r\nnum=(senha)\r\n\r\n\r\n\r\nREM This line calls the macro subroutine\r\nsubSub1_\r\n\r\nsub subSub1_()\r\n   autECLSession.autECLOIA.WaitForAppAvailable\r\n   \r\n  \r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"rparobotstbanco\"&\"@\"&(num)\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[enter]\"\r\n   \r\n   autECLSession.autECLPS.WaitForAttrib 1,1,\"20\",\"3c\",3,10000\r\n\r\n   autECLSession.autECLPS.Wait 2406 \r\n\r\n   autECLSession.autECLOIA.WaitForAppAvailable\r\n   \r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[pf9]\"\r\n   \r\n   autECLSession.autECLPS.WaitForAttrib 9,46,\"10\",\"3c\",3,10000\r\n\r\n   autECLSession.autECLPS.WaitForCursor 9,47,10000\r\n\r\n   autECLSession.autECLOIA.WaitForAppAvailable\r\n   \r\n\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"banco@\"&(num)\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   \r\n\r\n   num= (novaSenha)\r\n\r\n   \r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"banco\"&\"@\"&(num)\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[tab]\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"banco\"&\"@\"&(num)\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[enter]\"\r\n   \r\n   autECLSession.autECLPS.WaitForAttrib 1,1,\"20\",\"3c\",3,10000\r\n\r\n   autECLSession.autECLPS.Wait 4687 \r\n\r\n   autECLSession.autECLOIA.WaitForAppAvailable\r\n   \r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   \r\n   autECLSession.autECLPS.SendKeys \"[enter]\"\r\n   autECLSession.autECLPS.WaitForAttrib 22,23,\"00\",\"3c\",3,10000\r\n\r\n   autECLSession.autECLPS.WaitForCursor 22,24,10000\r\n\r\n   autECLSession.autECLOIA.WaitForAppAvailable\r\n   \r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"89\"\r\n   autECLSession.autECLOIA.WaitForInputReady\r\n   autECLSession.autECLPS.SendKeys \"[enter]\"\r\n   \r\n   \r\nend sub"
+replaceText --texttoparse "${macro}" --textpattern "(senha)" --replacement "${banka}" macro=value
+replaceText --texttoparse "${macro}" --textpattern "(novaSenha)" --replacement "${novaBanka}" macro=value
+writeToFile --value "${macro}" --file "${caminhoPadrao}\\Banka\\macro\\@alterarPassword.mac" --encoding "Default" --overwrite 
+endSub
+beginSub --name AtualizarNovaSenha
+//Como validar se a troca da senha funcionou? Você consegue obter o texto da tela em algum momento/
+textToBase64 --source "${novaBanka}" --encoding "UTF8" sucesso=success banka=value
+setEnvVar --target "User" --name "IBMRPA-BANKA" --value "${banka}" sucesso=value
+endSub
+beginSub --name ObterSenha
+getEnvVar --name "IBMRPA-BANKA" --target "User" banka=value
+base64ToText --source "${banka}" --encoding "UTF8" sucesso=success banka=value
+setVar --name "${novaBanka}" --value "${banka}"
+if --left "${novaBanka}" --operator "Greater_Than_Equal_To" --right 99
+	setVar --name "${novaBanka}" --value 1
+else
+	incrementVar --number ${novaBanka}
+endIf
+logMessage --message "Atual(${banka}) nova (${novaBanka})" --type "Info"
+endSub*23.0.1.0
