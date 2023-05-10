@@ -100,7 +100,7 @@ excelGetTable --file ${excelBalcoes} --sheet email_Invalido --entiretable  --has
 //openTextReader --share "None" --path "I:\\DCCG -IVA\\report_WDG_ComEmail_Invalido.csv" --encoding "Default" openFile=value
 //textReadTable --hasheaders  --readfromstart  --delimiter "ByCharacters" --characters ";" --file ${openFile} tabelaEmail_Invalido=value
 for --variable ${linha} --from 1 --to ${tabelaEmail_Invalido.Rows} --step 1
-	getTableCell --dataTable ${tabelaEmail_Invalido} --column 1 --row ${linha} codigoB=value
+	getTableCell --dataTable ${tabelaEmail_Invalido} --column 2 --row ${linha} codigoB=value
 	getTableCell --dataTable ${tabelaEmail_Invalido} --column 2 --row ${linha} nomeCliente=value
 	getTableCell --dataTable ${tabelaEmail_Invalido} --column 3 --row ${linha} nomeDocumento=value
 	getTableCell --dataTable ${tabelaEmail_Invalido} --column 4 --row ${linha} emailCliente=value
