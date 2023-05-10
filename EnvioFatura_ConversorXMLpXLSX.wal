@@ -1,5 +1,5 @@
 
-	�,Vo��L��f0U��0defVar --name ficheiroXML --type String
+	Ë,VoîÖL¤Ãf0Uš0defVar --name ficheiroXML --type String
 defVar --name ficheiroExcel --type String
 defVar --name excel --type Excel
 defVar --name tabela --type DataTable
@@ -13,7 +13,7 @@ defVar --name paraEmail --type List --innertype String --value "[valordirecto@ba
 defVar --name dataValidarDiretorios --type DateTime
 defVar --name ano --type Numeric
 defVar --name mes --type Numeric
-defVar --name dia --type Numeric
+defVar --name Dia --type Numeric
 defVar --name nomeFicheiroQuerie241 --type String
 defVar --name directorioRPA --type Boolean
 defVar --name querieExiste --type Boolean
@@ -30,11 +30,11 @@ getDatePart --date "${dataValidarDiretorios}" --type "Days" dia=value
 setVar --name "${nomeFicheiroQuerie241}" --value "facturas_IVA${ano}${mes}${dia}"
 ifFolder --path "Y:\\" directorioRPA=value
 if --left "${directorioRPA}" --operator "Is_True"
-	logMessage --message "Existe/Disponí­vel o diretorio das queries" --type "Info"
+	logMessage --message "Existe/DisponÃ­Â­vel o diretorio das queries" --type "Info"
 	setVar --name "${caminhoQuerie241}" --value "Y:\\${nomeFicheiroQuerie241}.xml"
 else
-	//ENVIAR EMAIL AOS SPONSOR´S
-	logMessage --message "Não está¡ Disponí­vel o diretorio das queries" --type "Info"
+	//ENVIAR EMAIL AOS SPONSORÂ´S
+	logMessage --message "NÃ£o estÃ¡Â¡ DisponÃ­Â­vel o diretorio das queries" --type "Info"
 endIf
 //Verifica se o ficheiro QUERIE existe no Directorio RPA
 for --variable ${validarTentativas} --from 1 --to 10 --step 1
@@ -46,13 +46,13 @@ for --variable ${validarTentativas} --from 1 --to 10 --step 1
 	endIf
 next
 if --left "${querieExiste}" --operator "Is_True" --negate 
-	emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Query241 não encontrada" --bodytype "Text" --body "Saudações,\r\n\r\nA query241 não foi encontrada no diretorio das queries.\r\n\r\nCordialmente,"
+	emailSend --connection ${connection} --to ${paraEmail} --from "banco.valor@bancovalor.ao" --cc ${emCC} --subject "RPA | Query241 nÃ£o encontrada" --bodytype "Text" --body "SaudaÃ§Ãµes,\r\n\r\nA query241 nÃ£o foi encontrada no diretorio das queries.\r\n\r\nCordialmente,"
 	failTest --message "Falha ao encontrar Query241"
 endIf
 setVar --name "${caminhoQuerie241}" --value "Y:\\${nomeFicheiroQuerie241}.xml"
 //### Copiar o ficheiro 241 no diretorio DCCG_IVA ###
 fileCopy --from "${caminhoQuerie241}" --to "${diretorioDCCG_IVA}"
-//### Termina o momento da cópia ###
+//### Termina o momento da cÃ³pia ###
 delay --timeout "00:00:40"
 setVar --name "${diretorio}" --value "Z:\\DCCG - IVA\\RPAROBOT bvalor01"
 setVar --name "${ficheiroXML}" --value "${diretorio}\\facturas_IVA${ano}${mes}${dia}.xml"
@@ -66,16 +66,16 @@ repeat
 	delay --timeout "00:00:05"
 	isFileInUse --file "${diretorio}\\${nomeFicheiroExcel}.xlsx" success=value
 until --left "${success}" --operator "Is_True"
-logMessage --message "# Abra o arquivo Excel\r\n$excel = New-Object -ComObject Excel.Application\r\n$workbook = $excel.Workbooks.Open(\"${diretorio}\\${nomeFicheiroExcel}.xlsx\")\r\n\r\n# Selecione a planilha na qual vocÃª deseja remover as linhas\r\n$worksheet = $workbook.Worksheets.Item(\"Sheet1\")\r\n\r\n# Remova as primeiras quatro linhas\r\n$range = $worksheet.Range(\"A1:A4\").EntireRow\r\n$range.Delete()\r\n\r\n# Salve as alteraÃ§Ãµes e feche o arquivo\r\n$workbook.Save()\r\n$workbook.Close()\r\n$excel.Quit()\r\n" --type "Info"
+logMessage --message "# Abra o arquivo Excel\r\n$excel = New-Object -ComObject Excel.Application\r\n$workbook = $excel.Workbooks.Open(\"${diretorio}\\${nomeFicheiroExcel}.xlsx\")\r\n\r\n# Selecione a planilha na qual vocÃƒÂª deseja remover as linhas\r\n$worksheet = $workbook.Worksheets.Item(\"Sheet1\")\r\n\r\n# Remova as primeiras quatro linhas\r\n$range = $worksheet.Range(\"A1:A4\").EntireRow\r\n$range.Delete()\r\n\r\n# Salve as alteraÃƒÂ§ÃƒÂµes e feche o arquivo\r\n$workbook.Save()\r\n$workbook.Close()\r\n$excel.Quit()\r\n" --type "Info"
 
-powerShell --apartmentState "MTA" --script "# Abra o arquivo Excel\r\n$excel = New-Object -ComObject Excel.Application\r\n$workbook = $excel.Workbooks.Open(\"${diretorio}\\${nomeFicheiroExcel}.xlsx\")\r\n\r\nif ($workbook -eq $null) {\r\n    $d =  \"NÃ£o foi possÃ­vel abrir o arquivo\"\r\n    Write-Warning $d\r\n} else {\r\n\r\n    $worksheet = $workbook.Worksheets.Item(1)\r\n\r\n    if ($worksheet -eq $null) {\r\n         $d = \"A planilha especificada nÃ£o existe no arquivo\"\r\n         Write-Warning $d\r\n    } else {\r\n        $range = $worksheet.Range(\"A1:A4\").EntireRow\r\n        $range.Delete()\r\n        $workbook.Save()\r\n        $d = \"Success\"\r\n        Write-Warning $d\r\n    }\r\n}\r\n    $workbook.Close()\r\n    $excel.Quit()" --comment "Remover as 4 primeira linhas" success=success errors=errors warn=warnings
+powerShell --apartmentState "MTA" --script "# Abra o arquivo Excel\r\n$excel = New-Object -ComObject Excel.Application\r\n$workbook = $excel.Workbooks.Open(\"${diretorio}\\${nomeFicheiroExcel}.xlsx\")\r\n\r\nif ($workbook -eq $null) {\r\n    $d =  \"NÃƒÂ£o foi possÃƒÂ­vel abrir o arquivo\"\r\n    Write-Warning $d\r\n} else {\r\n\r\n    $worksheet = $workbook.Worksheets.Item(1)\r\n\r\n    if ($worksheet -eq $null) {\r\n         $d = \"A planilha especificada nÃƒÂ£o existe no arquivo\"\r\n         Write-Warning $d\r\n    } else {\r\n        $range = $worksheet.Range(\"A1:A4\").EntireRow\r\n        $range.Delete()\r\n        $workbook.Save()\r\n        $d = \"Success\"\r\n        Write-Warning $d\r\n    }\r\n}\r\n    $workbook.Close()\r\n    $excel.Quit()" --comment "Remover as 4 primeira linhas" success=success errors=errors warn=warnings
 repeat
 	delay --timeout "00:00:05"
 	isFileInUse --file "${diretorio}\\${nomeFicheiroExcel}.xlsx" success=value
 until --left "${success}" --operator "Is_True"
 excelOpen --file "${diretorio}\\${nomeFicheiroExcel}.xlsx" --savechanges  excel=value
-excelSet --value Morada2 --file ${excel} --getfirstsheet  --row 1 --column 13 --comment "Existe duas colunas com o mesmo nome, entÃ£o precisei alterar o nome da segunda"
+excelSet --value Morada2 --file ${excel} --getfirstsheet  --row 1 --column 13 --comment "Existe duas colunas com o mesmo nome, entÃƒÂ£o precisei alterar o nome da segunda"
 excelGetTable --file ${excel} --getfirstsheet  --fromrow 5 --fromcolumn 1 --hasheaders  tabela=value
 excelClose --file ${excel}
 logMessage --message "A accao de copia da query241 e conversao do mesmo para xml foi procedida com sucesso.\r\n: ${success}" --type "Info"
-"	nP��F��E�s"��!%*21.0.3.0
+"	nPÔÉF´úE·s"“‰!%*21.0.3.0
